@@ -10,6 +10,7 @@ public class Arrayyy {
             System.out.print(arr[i]+ " ");
         }
         System.out.println();
+        
         for (int i: arr){
             System.out.print(i+ " ");
         }
