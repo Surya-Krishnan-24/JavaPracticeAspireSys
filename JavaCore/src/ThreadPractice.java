@@ -14,8 +14,9 @@ class Mythread implements Runnable{
 
 
 public class ThreadPractice extends Thread {
-    public static void main(String[] args) {
-            Thread t =  new Thread(new Mythread());
+    public static void main(String[] args) throws InterruptedException {
+
+        Thread t =  new Thread(new Mythread());
 
 
         Thread printNumber = new Thread(() ->
@@ -37,6 +38,11 @@ public class ThreadPractice extends Thread {
         printNumber.start();
         printAlphabet.start();
         t.start();
+        t.join();
+        printAlphabet.join();
+        printNumber.join();
+
+        System.out.println("Main is printing");
 
 
 
