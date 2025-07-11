@@ -26,6 +26,7 @@ public class Staticc {
 
 
             System.out.println(mobile1.name);
+        System.out.println(mobile.name);
             System.out.println(Mobile.brand);
 
             Mobile.show();
