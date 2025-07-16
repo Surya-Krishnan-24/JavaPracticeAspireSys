@@ -19,7 +19,6 @@ public class Staticc {
             Class.forName("Mobile");
 
 
-
             Mobile mobile = new Mobile();
             mobile.name = "Samsung Galaxy S22";
 
