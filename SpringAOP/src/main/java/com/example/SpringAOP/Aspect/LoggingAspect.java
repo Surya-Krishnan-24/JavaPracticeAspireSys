@@ -3,30 +3,34 @@ package com.example.SpringAOP.Aspect;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 @Aspect
 public class LoggingAspect {
 
+    private static final Logger logger = LoggerFactory.getLogger(LoggingAspect.class);
+
     @Before("execution(* com.example.SpringAOP.Service.*.*(..))")
     public void logBefore(JoinPoint joinPoint){
-        System.out.println("[Before] Method called: "+joinPoint.getSignature().getName());
+        logger.info("[Before] Method called: "+joinPoint.getSignature().getName());
     }
 
     @After("execution(* com.example.SpringAOP.Service.*.*(..))")
     public void logAfterFinally(JoinPoint joinPoint){
-        System.out.println("[After finally] Method called: "+joinPoint.getSignature().getName());
+        logger.info("[After finally] Method called: "+joinPoint.getSignature().getName());
     }
 
     @AfterReturning("execution(* com.example.SpringAOP.Service.*.*(..))")
     public void logAfterReturning(JoinPoint joinPoint){
-        System.out.println("[After Returning] Method called: "+joinPoint.getSignature().getName());
+        logger.info("[After Returning] Method called: "+joinPoint.getSignature().getName());
     }
 
     @AfterThrowing("execution(* com.example.SpringAOP.Service.*.*(..))")
     public void logAfterThrow(JoinPoint joinPoint){
-        System.out.println("[After Throwing] Method called: "+joinPoint.getSignature().getName());
+        logger.info("[After Throwing] Method called: "+joinPoint.getSignature().getName());
     }
 
     @Around("execution(* com.example.SpringAOP.Service.*.*(..))")
@@ -37,7 +41,7 @@ public class LoggingAspect {
 
         long end = System.currentTimeMillis();
 
-        System.out.println("Time runned: "+proceedingJoinPoint.getSignature().getName()+" "+(end - start)+" ms");
+        logger.info("Time runned: "+proceedingJoinPoint.getSignature().getName()+" "+(end - start)+" ms");
     }
 
 
