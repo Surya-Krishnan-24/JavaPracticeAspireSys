@@ -6,8 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Entity
 @Data
@@ -20,7 +19,10 @@ public class Post {
     private String caption;
     private String username;
     private int likes;
-    private List<String> comments;
+    @ElementCollection
+    private Map<String,Boolean> userLike = new HashMap<>();
+    @ElementCollection
+    private Map<String,String> comments = new HashMap<>();
     @Lob
     private byte[] imageData;
     private String imageName;

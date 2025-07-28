@@ -18,4 +18,8 @@ public class User {
     private String email;
     private String username;
     private String password;
+    private String bio;
+    private boolean privateAccount;
+    @Lob
+    private byte[] profilePicture;
 }

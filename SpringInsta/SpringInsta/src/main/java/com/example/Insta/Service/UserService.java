@@ -1,11 +1,17 @@
 package com.example.Insta.Service;
 
 import com.example.Insta.DTO.UserDTO;
+import com.example.Insta.DTO.UserUpdateDTO;
+import com.example.Insta.Exception.ImageNotFoundException;
 import com.example.Insta.Exception.UserAlreadyExistException;
+import com.example.Insta.Exception.UserNotFoundException;
 import com.example.Insta.Model.User;
 import com.example.Insta.Repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @Service
 public class UserService {
@@ -52,4 +58,31 @@ public class UserService {
         throw new RuntimeException("Invalid credentials.");
     }
 
+
+    public User updateProfileData(String username, UserUpdateDTO userUpdateDTO, MultipartFile image) {
+        User user = userRepo.findByUsername(username);
+
+        if(user != null) {
+            user.setBio(userUpdateDTO.getBio());
+            user.setPrivateAccount(userUpdateDTO.isPrivateAccount());
+            try {
+                user.setProfilePicture(image.getBytes());
+            } catch (IOException e) {
+                throw new ImageNotFoundException(e.getMessage());
+            }
+            userRepo.save(user);
+            User updateduser = userRepo.findByUsername(username);
+            return updateduser;
+        }
+        throw new UserNotFoundException(username+" not found in the Database to Update");
+    }
+
+    public String delete(int id) {
+        User find = userRepo.findById(id).orElse(new User());
+        if(find.getUserId() != 0) {
+            userRepo.deleteById(id);
+            return "Deleted";
+        }
+        throw new UserNotFoundException("User not Found");
+    }
 }
