@@ -23,4 +23,11 @@ public class GlobalException {
         return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(CredentialWrongException.class)
+    public ResponseEntity<String> handleImageNotFoundException(CredentialWrongException e){
+        return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
+    }
+
+
+
 }

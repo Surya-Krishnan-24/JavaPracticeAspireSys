@@ -1,5 +1,6 @@
 package com.example.Insta.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,7 +18,9 @@ public class User {
     private int userId;
     private String email;
     private String username;
+    @JsonIgnore
     private String password;
+    private String role;
     private String bio;
     private boolean privateAccount;
     @Lob

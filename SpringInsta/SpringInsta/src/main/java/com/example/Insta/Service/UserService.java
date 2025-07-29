@@ -7,7 +7,9 @@ import com.example.Insta.Exception.UserAlreadyExistException;
 import com.example.Insta.Exception.UserNotFoundException;
 import com.example.Insta.Model.User;
 import com.example.Insta.Repo.UserRepo;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,14 +20,16 @@ public class UserService {
 
 
     @Autowired
-    UserRepo userRepo;
+    private UserRepo userRepo;
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
 
     public String addUser(UserDTO userDTO) {
         if(!(userDTO.getPassword().equals(userDTO.getConfirmPassword()))){
             throw new RuntimeException("Password does not Match");
         }
 
-        User UniqueUser = userRepo.findByUsername(userDTO.getUsername());
+        User UniqueUser = userRepo.findByUsername(userDTO.getUsername()).orElse(null);
         User UniqueEmail = userRepo.findByEmail(userDTO.getEmail());
         User user = new User();
 
@@ -33,10 +37,12 @@ public class UserService {
 
             user.setUsername(userDTO.getUsername());
             user.setEmail(userDTO.getEmail());
-            user.setPassword(userDTO.getPassword());
+            user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+            user.setPrivateAccount(false);
+            user.setRole("USER");
 
             userRepo.save(user);
-            User responseUser = userRepo.findByUsername(userDTO.getUsername());
+            User responseUser = userRepo.findByUsername(userDTO.getUsername()).orElseThrow(() -> new UserNotFoundException("User not saved in the Database"));
             String response = "User Added Successfully "+responseUser.getUsername();
             return response;
         }
@@ -44,34 +50,49 @@ public class UserService {
 
     }
 
+    @Transactional
     public String signInUser(UserDTO userDTO) {
-        User username = userRepo.findByUsername(userDTO.getUsername());
+        User user = userRepo.findByUsername(userDTO.getUsername()).orElse(null);
+        System.out.println("hello");
 
-        if (username == null) {
-            username = userRepo.findByEmail(userDTO.getEmail());
+        if (user == null && userDTO.getEmail() != null) {
+            user = userRepo.findByEmail(userDTO.getEmail());
         }
 
-        if (username != null && username.getPassword().equals(userDTO.getPassword())) {
-            return "Credentials Matched for " + username.getUsername();
+        if (user != null && passwordEncoder.matches(userDTO.getPassword(), user.getPassword())) {
+            return "Credentials Matched for " + user.getUsername();
+        }
+        else {
+            System.out.println("invalid");
         }
 
         throw new RuntimeException("Invalid credentials.");
     }
 
 
+
+    @Transactional
     public User updateProfileData(String username, UserUpdateDTO userUpdateDTO, MultipartFile image) {
-        User user = userRepo.findByUsername(username);
+        User user = userRepo.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found in Database"));
 
         if(user != null) {
             user.setBio(userUpdateDTO.getBio());
             user.setPrivateAccount(userUpdateDTO.isPrivateAccount());
-            try {
-                user.setProfilePicture(image.getBytes());
-            } catch (IOException e) {
-                throw new ImageNotFoundException(e.getMessage());
+
+            String currentpass = user.getPassword();
+            user.setPassword(currentpass);
+
+
+            if(!image.isEmpty()) {
+                try {
+                    user.setProfilePicture(image.getBytes());
+                } catch (IOException e) {
+                    throw new ImageNotFoundException(e.getMessage());
+                }
             }
+            System.out.println("Password before save: " + user.getPassword());
             userRepo.save(user);
-            User updateduser = userRepo.findByUsername(username);
+            User updateduser = userRepo.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not Saved in Database"));
             return updateduser;
         }
         throw new UserNotFoundException(username+" not found in the Database to Update");

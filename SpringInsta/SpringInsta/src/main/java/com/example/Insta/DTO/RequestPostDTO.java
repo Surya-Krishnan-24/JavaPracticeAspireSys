@@ -7,6 +7,6 @@ import lombok.Data;
 public class RequestPostDTO {
 
     private String caption;
-    private String username;
+
 
 }
