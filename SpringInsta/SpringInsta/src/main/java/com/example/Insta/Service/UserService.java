@@ -50,24 +50,24 @@ public class UserService {
 
     }
 
-    @Transactional
-    public String signInUser(UserDTO userDTO) {
-        User user = userRepo.findByUsername(userDTO.getUsername()).orElse(null);
-        System.out.println("hello");
-
-        if (user == null && userDTO.getEmail() != null) {
-            user = userRepo.findByEmail(userDTO.getEmail());
-        }
-
-        if (user != null && passwordEncoder.matches(userDTO.getPassword(), user.getPassword())) {
-            return "Credentials Matched for " + user.getUsername();
-        }
-        else {
-            System.out.println("invalid");
-        }
-
-        throw new RuntimeException("Invalid credentials.");
-    }
+//    @Transactional
+//    public String signInUser(UserDTO userDTO) {
+//        User user = userRepo.findByUsername(userDTO.getUsername()).orElse(null);
+//        System.out.println("hello");
+//
+//        if (user == null && userDTO.getEmail() != null) {
+//            user = userRepo.findByEmail(userDTO.getEmail());
+//        }
+//
+//        if (user != null && passwordEncoder.matches(userDTO.getPassword(), user.getPassword())) {
+//            return "Credentials Matched for " + user.getUsername();
+//        }
+//        else {
+//            System.out.println("invalid");
+//        }
+//
+//        throw new RuntimeException("Invalid credentials.");
+//    }
 
 
 

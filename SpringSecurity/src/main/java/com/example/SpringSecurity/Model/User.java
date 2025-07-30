@@ -10,6 +10,7 @@ import lombok.Data;
 @Table(name = "users_list")
 public class User {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String username;
     private String password;

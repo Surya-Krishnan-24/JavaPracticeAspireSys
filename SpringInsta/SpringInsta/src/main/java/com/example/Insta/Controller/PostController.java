@@ -8,8 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,11 +24,9 @@ public class PostController {
     PostService postService;
 
     @GetMapping("/myposts")
-    public ResponseEntity<List<Post>> showMyPosts(){
+    public ResponseEntity<List<Post>> showMyPosts(@AuthenticationPrincipal UserDetails user){
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        System.out.println(username);
+        String username = user.getUsername();
 
         List<Post> posts = postService.getPosts(username);
         return new ResponseEntity<>(posts, HttpStatus.FOUND);
@@ -41,10 +41,9 @@ public class PostController {
     }
 
     @PostMapping(value = "/post", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Post> addPost(@RequestPart("postDTO") RequestPostDTO postDTO, @RequestPart("image") MultipartFile image){
+    public ResponseEntity<Post> addPost(@AuthenticationPrincipal UserDetails user,@RequestPart("postDTO") RequestPostDTO postDTO, @RequestPart("image") MultipartFile image){
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
+        String username = user.getUsername();
 
 
         Post savedPost = postService.addPost(postDTO,image,username);
@@ -55,33 +54,27 @@ public class PostController {
     }
 
     @PutMapping("/addcomment/{id}")
-    public ResponseEntity<Post> addComment(@PathVariable int id, @RequestBody CommentDTO commentDTO){
+    public ResponseEntity<Post> addComment(@AuthenticationPrincipal UserDetails user,@PathVariable int id, @RequestBody CommentDTO commentDTO){
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        System.out.println(username);
+        String username = user.getUsername();
 
         Post updatedPost = postService.updateComment(id,commentDTO,username);
         return new ResponseEntity<>(updatedPost,HttpStatus.ACCEPTED);
     }
 
     @PutMapping("/addlike/{id}")
-    public ResponseEntity<Post> addLike(@PathVariable int id){
+    public ResponseEntity<Post> addLike(@AuthenticationPrincipal UserDetails user,@PathVariable int id){
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        System.out.println(username);
+        String username = user.getUsername();
 
         Post updatedPost = postService.updateLike(id,username);
         return new ResponseEntity<>(updatedPost,HttpStatus.ACCEPTED);
     }
 
     @DeleteMapping("/deletepost/{id}")
-    public ResponseEntity<Post> deletePost(@PathVariable int id){
+    public ResponseEntity<Post> deletePost(@AuthenticationPrincipal UserDetails user,@PathVariable int id){
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        System.out.println(username);
+        String username = user.getUsername();
 
         String status = postService.deletePost(id,username);
         if(status.equals("Deleted")) {
