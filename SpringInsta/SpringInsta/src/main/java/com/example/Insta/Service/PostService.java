@@ -36,6 +36,7 @@ public class PostService {
         return posts;
     }
 
+    @Transactional
     public Post addPost(RequestPostDTO postDTO, MultipartFile image, String username) {
 
         User checkUser = userrepo.findByUsername(username).orElseThrow(() -> new UserNotFoundException("Create a Account before posting a post"));
@@ -57,6 +58,7 @@ public class PostService {
         return savedPost;
     }
 
+    @Transactional
     public Post updateComment(int id, CommentDTO commentDTO, String username) {
 
         User user = userrepo.findByUsername(username).orElseThrow(() -> new UserNotFoundException("Create a Account to post a Comment"));
@@ -70,6 +72,7 @@ public class PostService {
         return findPost;
     }
 
+    @Transactional
     public Post updateLike(int id, String username){
 
         User user = userrepo.findByUsername(username).orElseThrow(() -> new UserNotFoundException("Create a Account to post a Comment"));
@@ -81,7 +84,7 @@ public class PostService {
         Map<String,Boolean> userLike = findPost.getUserLike();
 
         if(userLike.containsKey(username) && userLike.get(username)){
-            userLike.replace(username,false);
+            userLike.remove(username);
             findPost.setLikes(findPost.getLikes() - 1);
         }
         else{

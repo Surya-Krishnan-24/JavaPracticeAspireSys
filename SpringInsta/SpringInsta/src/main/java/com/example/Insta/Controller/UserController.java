@@ -62,7 +62,6 @@ public class UserController {
         return new ResponseEntity<>(updatedUser,HttpStatus.ACCEPTED);
     }
 
-
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/deleteaccount/{id}")
     public ResponseEntity<User> deleteAccount(@PathVariable int id){
@@ -73,7 +72,5 @@ public class UserController {
         }
         return new ResponseEntity<>(new User(),HttpStatus.NOT_FOUND);
     }
-
-
 
 }
