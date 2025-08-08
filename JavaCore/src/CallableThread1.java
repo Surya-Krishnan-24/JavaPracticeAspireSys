@@ -1,20 +1,44 @@
 import java.util.concurrent.*;
 
+
+class Counter1{
+    int count = 0;
+    synchronized void increment(){
+        count++;
+    }
+}
 public class CallableThread1 {
+
+
     public static void main(String[] args) throws ExecutionException, InterruptedException {
-        Callable<String> task = (() ->{
-            Thread.sleep(10000);
-            return "DB Data Fetched";
+
+        Counter1 counter1 = new Counter1();
+
+        Callable<Integer> task = (() -> {
+
+            for(int i=0;i<10000;i++){
+                counter1.increment();
+            }
+            return counter1.count;
+
         }
         );
 
-        ExecutorService service = Executors.newSingleThreadExecutor();
 
-        Future<String> future = service.submit(task);
+
+        ExecutorService service = Executors.newFixedThreadPool(2);
+
+        Future<Integer> future = service.submit(task);
+
+        Future<Integer> future1 = service.submit(task);
+
+        Integer data1 = future1.get();
+
+        System.out.println(data1);
 
         System.out.println("Other operations");
 
-        String data = future.get();
+        Integer data = future.get();
 
         System.out.println(data);
 

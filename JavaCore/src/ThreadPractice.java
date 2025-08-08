@@ -12,7 +12,6 @@ class Mythread implements Runnable{
 
 }
 
-
 public class ThreadPractice extends Thread {
     public static void main(String[] args) throws InterruptedException {
 
