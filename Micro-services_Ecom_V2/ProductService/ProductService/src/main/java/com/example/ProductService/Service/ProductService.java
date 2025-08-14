@@ -4,17 +4,21 @@ import com.example.ProductService.DOA.ProductRepo;
 import com.example.ProductService.DTO.ProductRequest;
 import com.example.ProductService.DTO.ProductResponse;
 import com.example.ProductService.Model.Product;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
 
-    @Autowired
-    ProductRepo productRepo;
+
+    private final ProductRepo productRepo;
+
+    public ProductService(ProductRepo productRepo) {
+        this.productRepo = productRepo;
+    }
 
     public List<ProductResponse> getAllProducts() {
         List<ProductResponse> productResponses = productRepo.findByActiveTrue().stream()
@@ -83,5 +87,10 @@ public class ProductService {
                 .stream()
                 .map(this::mapToProductResponse)
                 .collect(Collectors.toList());
+    }
+
+    public Optional<ProductResponse> getProductById(int id) {
+        return productRepo.findByIdAndActiveTrue(id).map(this::mapToProductResponse);
+
     }
 }

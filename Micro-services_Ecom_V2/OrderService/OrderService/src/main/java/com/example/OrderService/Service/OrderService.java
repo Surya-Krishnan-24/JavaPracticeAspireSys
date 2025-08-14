@@ -1,14 +1,17 @@
 package com.example.OrderService.Service;
 
 
+import com.example.OrderService.Clients.UserServiceClient;
 import com.example.OrderService.DOA.OrderRepo;
 import com.example.OrderService.DTO.OrderItemDTO;
 import com.example.OrderService.DTO.OrderResponse;
+import com.example.OrderService.DTO.UserResponse;
 import com.example.OrderService.Model.CartItem;
 import com.example.OrderService.Model.Order;
 import com.example.OrderService.Model.OrderItem;
 import com.example.OrderService.Model.OrderStatus;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -16,34 +19,35 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-
+@RequiredArgsConstructor
 public class OrderService {
 
-    @Autowired
-    private CartService cartService;
-    @Autowired
-    private OrderRepo orderRepo;
 
-    public Optional<OrderResponse> createOrder(int userId) {
-        // Validate for cart items
+    private final CartService cartService;
+
+    private final OrderRepo orderRepo;
+
+    private final UserServiceClient userServiceClient;
+
+    public Optional<OrderResponse> createOrder(String userId) {
+
         List<CartItem> cartItems = cartService.getCart(userId);
         if (cartItems.isEmpty()) {
             return Optional.empty();
         }
-//        // Validate for user
-//
-//        Optional<User> userOptional = userRepository.findById(Long.valueOf(userId));
-//        if (userOptional.isEmpty()) {
-//            return Optional.empty();
-//        }
-//        User user = userOptional.get();
 
-        // Calculate total price
+
+        UserResponse user = userServiceClient.getUserDetails(userId);
+        if (user == null) {
+            return Optional.empty();
+        }
+
+
         BigDecimal totalPrice = cartItems.stream()
                 .map(CartItem::getPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Create order
+
         Order order = new Order();
         order.setUserId(userId);
         order.setStatus(OrderStatus.CONFIRMED);
@@ -62,7 +66,7 @@ public class OrderService {
         order.setItems(orderItems);
         Order savedOrder = orderRepo.save(order);
 
-        // Clear the cart
+
         cartService.clearCart(userId);
 
         return Optional.of(mapToOrderResponse(savedOrder));

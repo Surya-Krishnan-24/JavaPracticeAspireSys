@@ -7,7 +7,6 @@ import com.example.UserService.DTO.UserResponse;
 import com.example.UserService.Model.User;
 import com.example.UserService.Model.UserAddress;
 import com.example.UserService.Model.UserRole;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,8 +17,12 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
 
-    @Autowired
-    UserRepo userRepo;
+
+    private final UserRepo userRepo;
+
+    public UserService(UserRepo userRepo) {
+        this.userRepo = userRepo;
+    }
 
     public List<UserResponse> fetchAllUsers(){
 
@@ -61,19 +64,25 @@ public class UserService {
         userResponse.setEmail(user.getEmail());
 
         if(user.getUserAddress()!= null){
-            AddressResponse addressResponse = new AddressResponse();
-            addressResponse.setHouseNo(user.getUserAddress().getHouseNo());
-            addressResponse.setCity(user.getUserAddress().getCity());
-            addressResponse.setCountry(user.getUserAddress().getCountry());
-            addressResponse.setStreet(user.getUserAddress().getStreet());
-            addressResponse.setState(user.getUserAddress().getState());
-            addressResponse.setPincode(user.getUserAddress().getPincode());
+            AddressResponse addressResponse = getAddressResponse(user);
             userResponse.setAddressResponse(addressResponse);
         }
 
         return userResponse;
 
     }
+
+    private static AddressResponse getAddressResponse(User user) {
+        AddressResponse addressResponse = new AddressResponse();
+        addressResponse.setHouseNo(user.getUserAddress().getHouseNo());
+        addressResponse.setCity(user.getUserAddress().getCity());
+        addressResponse.setCountry(user.getUserAddress().getCountry());
+        addressResponse.setStreet(user.getUserAddress().getStreet());
+        addressResponse.setState(user.getUserAddress().getState());
+        addressResponse.setPincode(user.getUserAddress().getPincode());
+        return addressResponse;
+    }
+
 
     private void updateUserFromRequest(User user, UserRequest userRequest) {
         user.setFirstName(userRequest.getFirstName());

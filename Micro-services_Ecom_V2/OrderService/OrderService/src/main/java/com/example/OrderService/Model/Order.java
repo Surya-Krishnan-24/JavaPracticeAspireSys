@@ -19,7 +19,7 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int order_id;
-    private int userId;
+    private String userId;
 
     private BigDecimal totalAmount;
 

@@ -1,12 +1,16 @@
 package com.example.OrderService.Service;
 
 
+import com.example.OrderService.Clients.ProductServiceClient;
+import com.example.OrderService.Clients.UserServiceClient;
 import com.example.OrderService.DOA.CartItemRepo;
 import com.example.OrderService.DTO.CartItemRequest;
+import com.example.OrderService.DTO.ProductResponse;
+
 import com.example.OrderService.Model.CartItem;
 import jakarta.transaction.Transactional;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -14,31 +18,27 @@ import java.util.List;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class CartService {
-    @Autowired
-    private CartItemRepo cartItemRepo;
 
-    public boolean addToCart(int userId, CartItemRequest cartItemRequest) {
-//        // Look for product
-//        Optional<Product> productOpt = productRepository.findById(request.getProductId());
-//        if (productOpt.isEmpty())
-//            return false;
-//
-//        Product product = productOpt.get();
-//        if (product.getStockQuantity() < request.getQuantity())
-//            return false;
-//
-//        Optional<User> userOpt = userRepository.findById(Long.valueOf(userId));
-//        if (userOpt.isEmpty())
-//            return false;
-//
-//        User user = userOpt.get();
+    private final CartItemRepo cartItemRepo;
+
+    private final ProductServiceClient productServiceClient;
+
+    private final UserServiceClient userServiceClient;
+
+    public boolean addToCart(String userId, CartItemRequest cartItemRequest) {
+
+        ProductResponse productResponse = productServiceClient.getProductDetails(cartItemRequest.getProductId());
+        if (productResponse == null || productResponse.getStockQuantity() < cartItemRequest.getQuantity() || userServiceClient.getUserDetails(userId) == null)
+            return false;
+
 
         CartItem existingCartItem = cartItemRepo.findByUserIdAndProductId(userId, cartItemRequest.getProductId());
         if (existingCartItem != null) {
 
             existingCartItem.setQuantity(existingCartItem.getQuantity() + cartItemRequest.getQuantity());
-            existingCartItem.setPrice(BigDecimal.valueOf(1000.00));
+            existingCartItem.setPrice(productResponse.getPrice().multiply(BigDecimal.valueOf(existingCartItem.getQuantity())));
             cartItemRepo.save(existingCartItem);
         } else {
 
@@ -46,13 +46,13 @@ public class CartService {
             cartItem.setUserId(userId);
             cartItem.setProductId(cartItemRequest.getProductId());
             cartItem.setQuantity(cartItemRequest.getQuantity());
-            cartItem.setPrice(BigDecimal.valueOf(1000.00));
+            cartItem.setPrice(productResponse.getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity())));
             cartItemRepo.save(cartItem);
         }
         return true;
     }
 
-    public boolean deleteItemFromCart(int userId, int productId) {
+    public boolean deleteItemFromCart(String userId, int productId) {
         CartItem cartItem = cartItemRepo.findByUserIdAndProductId(userId, productId);
 
         if (cartItem != null){
@@ -62,11 +62,11 @@ public class CartService {
         return false;
     }
 
-    public List<CartItem> getCart(int userId) {
+    public List<CartItem> getCart(String userId) {
         return cartItemRepo.findByUserId(userId);
     }
 
-    public void clearCart(int userId) {
+    public void clearCart(String userId) {
         cartItemRepo.deleteByUserId(userId);
     }
 }
