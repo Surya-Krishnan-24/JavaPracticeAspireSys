@@ -1,9 +1,10 @@
 package com.example.ProductService.Controller;
 
+import com.example.ProductService.DTO.ProductQuantityRequest;
 import com.example.ProductService.DTO.ProductRequest;
 import com.example.ProductService.DTO.ProductResponse;
 import com.example.ProductService.Service.ProductService;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -59,11 +60,22 @@ public class ProductController {
 
     }
 
+
     @GetMapping("/search")
     public ResponseEntity<List<ProductResponse>> searchProduct(@RequestParam String keyword) {
         return new ResponseEntity<>(productService.searchProduct(keyword), HttpStatus.OK);
 
 
+    }
+
+    @PutMapping("/quantity")
+    public ResponseEntity<String> updateProductQuantity(@RequestBody List<ProductQuantityRequest> productQuantityRequests) {
+
+         String  response = productService.updateProductQuantity(productQuantityRequests);
+        if (response.equals("Updated")) {
+            return new ResponseEntity<>("Quantity Updated",HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
 }

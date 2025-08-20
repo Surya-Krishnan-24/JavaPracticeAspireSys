@@ -1,6 +1,5 @@
 package com.example.OrderService.Service;
 
-
 import com.example.OrderService.Clients.ProductServiceClient;
 import com.example.OrderService.Clients.UserServiceClient;
 import com.example.OrderService.DOA.CartItemRepo;
@@ -23,6 +22,7 @@ public class CartService {
 
     private final CartItemRepo cartItemRepo;
 
+
     private final ProductServiceClient productServiceClient;
 
     private final UserServiceClient userServiceClient;
@@ -30,9 +30,9 @@ public class CartService {
     public boolean addToCart(String userId, CartItemRequest cartItemRequest) {
 
         ProductResponse productResponse = productServiceClient.getProductDetails(cartItemRequest.getProductId());
-        if (productResponse == null || productResponse.getStockQuantity() < cartItemRequest.getQuantity() || userServiceClient.getUserDetails(userId) == null)
+        if (productResponse == null || productResponse.getStockQuantity() < cartItemRequest.getQuantity() || userServiceClient.getUserDetails(userId) == null) {
             return false;
-
+        }
 
         CartItem existingCartItem = cartItemRepo.findByUserIdAndProductId(userId, cartItemRequest.getProductId());
         if (existingCartItem != null) {
@@ -58,6 +58,7 @@ public class CartService {
         if (cartItem != null){
             cartItemRepo.delete(cartItem);
             return true;
+
         }
         return false;
     }

@@ -20,7 +20,6 @@ public class User {
     private String id;
     private String firstName;
     private String lastName;
-
     @Indexed(unique = true)
     private String email;
     private String mobileNo;

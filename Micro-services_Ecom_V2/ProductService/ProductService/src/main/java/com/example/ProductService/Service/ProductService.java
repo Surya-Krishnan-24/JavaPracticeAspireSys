@@ -1,6 +1,7 @@
 package com.example.ProductService.Service;
 
 import com.example.ProductService.DOA.ProductRepo;
+import com.example.ProductService.DTO.ProductQuantityRequest;
 import com.example.ProductService.DTO.ProductRequest;
 import com.example.ProductService.DTO.ProductResponse;
 import com.example.ProductService.Model.Product;
@@ -62,6 +63,12 @@ public class ProductService {
         product.setPrice(productRequest.getPrice());
         product.setImageUrl(productRequest.getImageUrl());
         product.setStockQuantity(productRequest.getStockQuantity());
+        if(productRequest.getStockQuantity()<1) {
+            product.setActive(false);
+        }
+        else {
+            product.setActive(true);
+        }
     }
 
     public ProductResponse updateProduct(int id,ProductRequest productRequest) {
@@ -91,6 +98,23 @@ public class ProductService {
 
     public Optional<ProductResponse> getProductById(int id) {
         return productRepo.findByIdAndActiveTrue(id).map(this::mapToProductResponse);
+
+    }
+
+    public String updateProductQuantity(List<ProductQuantityRequest> productQuantityRequests) {
+
+        for (ProductQuantityRequest pqr : productQuantityRequests) {
+            Product product = productRepo.findById(pqr.getProductId()).get();
+
+            product.setStockQuantity(product.getStockQuantity() - pqr.getStockQuantity());
+            if(product.getStockQuantity() == 0){
+                product.setActive(false);
+            }
+
+            productRepo.save(product);
+        }
+
+        return "Updated";
 
     }
 }

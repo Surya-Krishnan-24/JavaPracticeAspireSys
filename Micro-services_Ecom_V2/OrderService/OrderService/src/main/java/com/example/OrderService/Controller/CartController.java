@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/cart")
+@RequestMapping("/cart")
 @RequiredArgsConstructor
 public class CartController {
 
@@ -22,6 +22,7 @@ public class CartController {
     public ResponseEntity<String> addToCart(
             @RequestHeader("X-User-ID") String userId,
             @RequestBody CartItemRequest request) {
+
         if (!cartService.addToCart(userId, request)) {
             return ResponseEntity.badRequest().body("Product Out of Stock or User not found or Product not found");
         }
