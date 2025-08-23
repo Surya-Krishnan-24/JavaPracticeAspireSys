@@ -1,13 +1,12 @@
 package com.example.UserService.Controller;
 
 
+import com.example.UserService.DTO.UserLoginRequest;
 import com.example.UserService.DTO.UserRequest;
 import com.example.UserService.DTO.UserResponse;
 import com.example.UserService.Service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,11 +29,17 @@ public class UserController {
         return new ResponseEntity<>(userService.fetchAllUsers(), HttpStatus.OK);
     }
 
+
     @PostMapping
     public ResponseEntity<String> createUser(@RequestBody UserRequest userRequest){
 
         return new ResponseEntity<>(userService.createUser(userRequest), HttpStatus.CREATED);
 
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<String> loginUser(@RequestBody UserLoginRequest userLoginRequest){
+        return new ResponseEntity<>(userService.loginUser(userLoginRequest),HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
@@ -45,6 +50,7 @@ public class UserController {
                 .map(ResponseEntity::ok)
                 .orElseGet(() ->ResponseEntity.notFound().build());
     }
+
     @PutMapping("/{id}")
     public ResponseEntity<UserRequest> updateUser(@PathVariable String id,@RequestBody UserRequest userRequest){
         UserRequest user1 = userService.updateUser(id,userRequest);

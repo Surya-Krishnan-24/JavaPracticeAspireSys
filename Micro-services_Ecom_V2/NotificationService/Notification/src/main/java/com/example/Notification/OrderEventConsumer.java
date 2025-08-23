@@ -28,7 +28,8 @@ public class OrderEventConsumer {
             log.info("Received Order created Event for user name : {}", orderCreatedEvent.getUserName());
 
             SimpleMailMessage message = new SimpleMailMessage();
-//            message.setTo(orderCreatedEvent.getUserEmail());
+            message.setTo(orderCreatedEvent.getUserEmail());
+            System.out.println(orderCreatedEvent.getUserEmail());
             message.setSubject("Order Confirm - " + orderCreatedEvent.getOrderId());
 
             StringBuilder content = new StringBuilder();

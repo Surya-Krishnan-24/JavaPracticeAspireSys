@@ -2,11 +2,13 @@ package com.example.UserService.Service;
 
 import com.example.UserService.DOA.UserRepo;
 import com.example.UserService.DTO.AddressResponse;
+import com.example.UserService.DTO.UserLoginRequest;
 import com.example.UserService.DTO.UserRequest;
 import com.example.UserService.DTO.UserResponse;
 import com.example.UserService.Model.User;
 import com.example.UserService.Model.UserAddress;
 import com.example.UserService.Model.UserRole;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,14 +17,14 @@ import java.util.stream.Collectors;
 
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
 
     private final UserRepo userRepo;
 
-    public UserService(UserRepo userRepo) {
-        this.userRepo = userRepo;
-    }
+    private final KeyCloakAdminService keyCloakAdminService;
+
 
     public List<UserResponse> fetchAllUsers(){
 
@@ -33,9 +35,16 @@ public class UserService {
 
     public String createUser(UserRequest userRequest){
 
+        String token = keyCloakAdminService.getAdminAccessToken();
+        String keycloakUserId = keyCloakAdminService.createUser(token,userRequest);
+
         User user = new User();
         updateUserFromRequest(user,userRequest);
+        user.setKeycloakId(keycloakUserId);
+
+        keyCloakAdminService.assignRealmRoleTUser(userRequest.getUsername(), String.valueOf(UserRole.USER),keycloakUserId);
         userRepo.save(user);
+
         return "User Added";
     }
 
@@ -55,6 +64,7 @@ public class UserService {
     }
 
     private UserResponse mapToUserResponse(User user){
+
         UserResponse userResponse = new UserResponse();
         userResponse.setId(user.getId());
         userResponse.setFirstName(user.getFirstName());
@@ -106,6 +116,10 @@ public class UserService {
             user.setUserAddress(address);
         }
 
+    }
+
+    public String loginUser(UserLoginRequest userLoginRequest) {
+        return keyCloakAdminService.login(userLoginRequest.getUsername(),userLoginRequest.getPassword());
     }
 }
 

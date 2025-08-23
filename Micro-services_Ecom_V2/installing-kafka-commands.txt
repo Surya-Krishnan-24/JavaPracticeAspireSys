@@ -19,3 +19,11 @@ docker run -d \
   -e KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1 \
   --link zookeeper \
   confluentinc/cp-kafka:7.5.0
+  
+  
+
+docker run -d   --name keycloak   -p 8443:8080   -e KC_BOOTSTRAP_ADMIN_USERNAME=admin   -e KC_BOOTSTRAP_ADMIN_PASSWORD=admin   -v keycloak_data:/opt/keycloak/data   quay.io/keycloak/keycloak:26.3.3   start-dev
+
+
+docker stop keycloak
+
