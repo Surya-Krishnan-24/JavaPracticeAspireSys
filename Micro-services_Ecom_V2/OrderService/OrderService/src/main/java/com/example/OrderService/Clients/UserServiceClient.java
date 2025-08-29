@@ -10,4 +10,8 @@ public interface UserServiceClient {
 
     @GetExchange("/api/users/{id}")
     UserResponse getUserDetails(@PathVariable String id);
+
+    @GetExchange("/api/users/keycloak/{id}")
+    String getUserDetailsByKeycloak(@PathVariable String id);
+
 }

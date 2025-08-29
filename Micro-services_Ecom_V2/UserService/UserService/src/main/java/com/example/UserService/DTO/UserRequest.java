@@ -1,6 +1,7 @@
 package com.example.UserService.DTO;
 
 
+import com.example.UserService.Model.UserRole;
 import lombok.Data;
 
 
@@ -12,6 +13,7 @@ public class UserRequest {
     private String lastName;
     private String password;
     private String email;
+    private UserRole userRole = UserRole.USER;
     private String mobileNo;
     private AddressResponse addressResponse;
 

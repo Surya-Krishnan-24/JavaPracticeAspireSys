@@ -23,21 +23,25 @@ public class SecurityConfig {
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http){
         return http.csrf(csrf -> csrf.disable())
                 .authorizeExchange(exchange ->
-                        exchange.pathMatchers("/products/**").hasRole("USER")
+                        exchange.pathMatchers("/products/**").hasAnyRole("USER", "ADMIN")
                                 .pathMatchers("/orders/**").hasRole("USER")
+                                .pathMatchers("/cart/**").hasRole("USER")
+                                .pathMatchers("/seller/**").permitAll()
                                 .pathMatchers("/users/**").permitAll()
                                 .pathMatchers("/eureka/**").permitAll()
                                 .anyExchange().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
-                        jwt.jwtAuthenticationConverter(grantedAuthoritesExtractor())))
+
+                        jwt.jwtAuthenticationConverter(grantedAuthoritiesExtractor())))
                 .build();
     }
 
-    private Converter<Jwt, Mono<AbstractAuthenticationToken>> grantedAuthoritesExtractor(){
+    private Converter<Jwt, Mono<AbstractAuthenticationToken>> grantedAuthoritiesExtractor(){
 
         ReactiveJwtAuthenticationConverter jwtAuthenticationConverter = new ReactiveJwtAuthenticationConverter();
 
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwt -> {
+
             List<String> roles = jwt.getClaimAsMap("resource_access")
                     .entrySet().stream()
                     .filter(entry -> entry.getKey().equals("Oauth2"))

@@ -12,6 +12,7 @@ import com.example.OrderService.Model.OrderItem;
 import com.example.OrderService.Model.OrderStatus;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -78,8 +79,6 @@ public class OrderService {
         order.setItems(orderItems);
         Order savedOrder = orderRepo.save(order);
 
-
-
         cartService.clearCart(userId);
 
         productServiceClient.updateProductQuantity(productQuantityRequests);
@@ -144,5 +143,10 @@ public class OrderService {
                         .toList(),
                 order.getCreatedAt()
         );
+    }
+
+    public String getUserId(Jwt jwt) {
+        String keycloakId = jwt.getSubject();
+        return userServiceClient.getUserDetailsByKeycloak(keycloakId);
     }
 }

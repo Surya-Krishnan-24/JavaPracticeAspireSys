@@ -10,6 +10,7 @@ import com.example.OrderService.Model.CartItem;
 import jakarta.transaction.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -22,12 +23,11 @@ public class CartService {
 
     private final CartItemRepo cartItemRepo;
 
-
     private final ProductServiceClient productServiceClient;
 
     private final UserServiceClient userServiceClient;
 
-    public boolean addToCart(String userId, CartItemRequest cartItemRequest) {
+    public boolean addToCart( String userId, CartItemRequest cartItemRequest) {
 
         ProductResponse productResponse = productServiceClient.getProductDetails(cartItemRequest.getProductId());
         if (productResponse == null || productResponse.getStockQuantity() < cartItemRequest.getQuantity() || userServiceClient.getUserDetails(userId) == null) {
@@ -69,5 +69,11 @@ public class CartService {
 
     public void clearCart(String userId) {
         cartItemRepo.deleteByUserId(userId);
+    }
+
+    public String getUserId(Jwt jwt) {
+        String keycloakId = jwt.getSubject();
+        return userServiceClient.getUserDetailsByKeycloak(keycloakId);
+
     }
 }

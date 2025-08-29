@@ -13,4 +13,5 @@ public class ProductRequest {
     private int stockQuantity;
     private String category;
     private String imageUrl;
+    private String seller;
 }

@@ -1,5 +1,5 @@
 package com.example.UserService.Model;
 
 public enum UserRole {
-    USER, ADMIN
+    USER, ADMIN, SELLER
 }

@@ -16,4 +16,5 @@ public class ProductResponse {
     private String category;
     private String imageUrl;
     private Boolean active;
+    private String seller;
 }

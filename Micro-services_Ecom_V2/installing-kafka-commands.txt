@@ -1,7 +1,4 @@
 
-delete the container first then
-
-
 docker run -d \
   --name zookeeper \
   -p 2181:2181 \

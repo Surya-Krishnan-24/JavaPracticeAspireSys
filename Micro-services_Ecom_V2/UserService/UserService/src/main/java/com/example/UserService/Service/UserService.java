@@ -7,8 +7,8 @@ import com.example.UserService.DTO.UserRequest;
 import com.example.UserService.DTO.UserResponse;
 import com.example.UserService.Model.User;
 import com.example.UserService.Model.UserAddress;
-import com.example.UserService.Model.UserRole;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,8 +20,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService {
 
-
     private final UserRepo userRepo;
+
+    private final StreamBridge streamBridge;
 
     private final KeyCloakAdminService keyCloakAdminService;
 
@@ -42,16 +43,18 @@ public class UserService {
         updateUserFromRequest(user,userRequest);
         user.setKeycloakId(keycloakUserId);
 
-        keyCloakAdminService.assignRealmRoleTUser(userRequest.getUsername(), String.valueOf(UserRole.USER),keycloakUserId);
+        keyCloakAdminService.assignRealmRoleTUser(userRequest.getUsername(), String.valueOf(user.getRole()),keycloakUserId);
         userRepo.save(user);
-
+        streamBridge.send("createUser-out-0", user);
         return "User Added";
     }
 
-
-
     public Optional<UserResponse> getUserById(String id) {
         return userRepo.findById(id).map(this::mapToUserResponse);
+    }
+
+    public String getUserBySellerName(String sellerName) {
+        return userRepo.findByUsername(sellerName).getEmail();
     }
 
     public UserRequest updateUser(String id, UserRequest userRequest) {
@@ -67,6 +70,7 @@ public class UserService {
 
         UserResponse userResponse = new UserResponse();
         userResponse.setId(user.getId());
+        userResponse.setUsername(user.getUsername());
         userResponse.setFirstName(user.getFirstName());
         userResponse.setLastName(user.getLastName());
         userResponse.setRole(user.getRole());
@@ -97,9 +101,10 @@ public class UserService {
     private void updateUserFromRequest(User user, UserRequest userRequest) {
         user.setFirstName(userRequest.getFirstName());
         user.setLastName(userRequest.getLastName());
+        user.setUsername(userRequest.getUsername());
         user.setEmail(userRequest.getEmail());
         user.setMobileNo(userRequest.getMobileNo());
-        user.setRole(UserRole.USER);
+        user.setRole(userRequest.getUserRole());
         if (userRequest.getAddressResponse() != null) {
             UserAddress address = user.getUserAddress();
             if (address == null) {
@@ -120,6 +125,11 @@ public class UserService {
 
     public String loginUser(UserLoginRequest userLoginRequest) {
         return keyCloakAdminService.login(userLoginRequest.getUsername(),userLoginRequest.getPassword());
+    }
+
+    public String getUserIdByKeyCloak(String keycloakId) {
+        User user = userRepo.findByKeycloakId(keycloakId);
+        return user.getId();
     }
 }
 
