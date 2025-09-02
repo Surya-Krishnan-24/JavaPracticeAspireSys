@@ -43,7 +43,7 @@ public class UserService {
         updateUserFromRequest(user,userRequest);
         user.setKeycloakId(keycloakUserId);
 
-        keyCloakAdminService.assignRealmRoleTUser(userRequest.getUsername(), String.valueOf(user.getRole()),keycloakUserId);
+        keyCloakAdminService.assignRealmRoleTUser(String.valueOf(user.getRole()),keycloakUserId);
         userRepo.save(user);
         streamBridge.send("createUser-out-0", user);
         return "User Added";

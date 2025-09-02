@@ -25,7 +25,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class OrderService {
 
-
     private final CartService cartService;
 
     private final OrderRepo orderRepo;
@@ -112,19 +111,6 @@ public class OrderService {
 
 
         return Optional.of(mapToOrderResponse(savedOrder));
-    }
-
-    private List<OrderItemDTO> mapToOrderItemDTOs(List<OrderItem> items){
-        return items.stream()
-                .map(item -> new OrderItemDTO(
-                        item.getId(),
-                        item.getProductId(),
-                        item.getQuantity(),
-                        item.getPrice(),
-                        item.getPrice().multiply(new BigDecimal(item.getQuantity()))
-
-
-                        )).toList();
     }
 
     private OrderResponse mapToOrderResponse(Order order) {

@@ -23,7 +23,8 @@ public class SecurityConfig {
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http){
         return http.csrf(csrf -> csrf.disable())
                 .authorizeExchange(exchange ->
-                        exchange.pathMatchers("/products/**").hasAnyRole("USER", "ADMIN")
+                        exchange.pathMatchers("/actuator/**").permitAll()
+                                .pathMatchers("/products/**").hasAnyRole("USER", "ADMIN")
                                 .pathMatchers("/orders/**").hasRole("USER")
                                 .pathMatchers("/cart/**").hasRole("USER")
                                 .pathMatchers("/seller/**").permitAll()
@@ -33,7 +34,7 @@ public class SecurityConfig {
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
 
                         jwt.jwtAuthenticationConverter(grantedAuthoritiesExtractor())))
-                .build();
+                .build  ();
     }
 
     private Converter<Jwt, Mono<AbstractAuthenticationToken>> grantedAuthoritiesExtractor(){

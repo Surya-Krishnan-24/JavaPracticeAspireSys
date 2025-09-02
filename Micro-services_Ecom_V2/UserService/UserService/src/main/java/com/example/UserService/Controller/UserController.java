@@ -55,7 +55,6 @@ public class UserController {
 
     }
 
-
     @PostMapping("/login")
     public ResponseEntity<String> loginUser(@RequestBody UserLoginRequest userLoginRequest){
 
@@ -78,6 +77,7 @@ public class UserController {
         System.out.println(user);
         return user;
     }
+
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PutMapping("/{id}")
     public ResponseEntity<UserRequest> updateUser(@PathVariable String id,@RequestBody UserRequest userRequest){
@@ -87,6 +87,7 @@ public class UserController {
         }
         return new ResponseEntity<>(user1,HttpStatus.ACCEPTED);
     }
+
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/keycloak/{keycloakId}")
     public String getUserDetailsByKeycloak(@PathVariable String keycloakId){

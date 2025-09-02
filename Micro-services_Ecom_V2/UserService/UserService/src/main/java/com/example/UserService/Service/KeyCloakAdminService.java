@@ -58,7 +58,8 @@ public class KeyCloakAdminService {
                     .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                     .body(params)
                     .retrieve()
-                    .body(new ParameterizedTypeReference<Map<String, Object>>() {});
+                    .body(new ParameterizedTypeReference<>() {
+                    });
 
             return response.get("access_token").toString();
         } catch (HttpStatusCodeException e) {
@@ -110,10 +111,11 @@ public class KeyCloakAdminService {
                 .uri(keycloakServerUrl + "/admin/realms/" + realm + "/clients/" + clientUuid + "/roles/" + roleName)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                 .retrieve()
-                .body(new ParameterizedTypeReference<Map<String, Object>>() {});
+                .body(new ParameterizedTypeReference<>() {
+                });
     }
 
-    public void assignRealmRoleTUser(String username, String roleName, String userId) {
+    public void assignRealmRoleTUser(String roleName, String userId) {
         String token = getAdminAccessToken();
         Map<String, Object> roleRep = getRealmRoleRepresentation(token, roleName);
 
@@ -142,7 +144,8 @@ public class KeyCloakAdminService {
                     .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                     .body(params)
                     .retrieve()
-                    .body(new ParameterizedTypeReference<Map<String, Object>>() {});
+                    .body(new ParameterizedTypeReference<>() {
+                    });
 
             return response != null ? response.get("access_token").toString() : null;
         } catch (Exception e) {
