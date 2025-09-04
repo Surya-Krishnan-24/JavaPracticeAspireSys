@@ -2,6 +2,7 @@ package com.example.OrderService.Model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -14,6 +15,7 @@ import java.util.List;
 @Data
 @Entity
 @Table(name = "Order_Table")
+@ToString(exclude = "items")
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

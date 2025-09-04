@@ -21,6 +21,8 @@ docker run -d \
 
 docker run -d   --name keycloak   -p 8443:8080   -e KC_BOOTSTRAP_ADMIN_USERNAME=admin   -e KC_BOOTSTRAP_ADMIN_PASSWORD=admin   -v keycloak_data:/opt/keycloak/data   quay.io/keycloak/keycloak:26.3.3   start-dev
 
+docker run -d --name zipkin -p 9411:9411 openzipkin/zipkin
+
 
 docker stop keycloak
 

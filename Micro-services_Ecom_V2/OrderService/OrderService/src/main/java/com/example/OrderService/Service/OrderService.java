@@ -40,7 +40,9 @@ public class OrderService {
         List<CartItem> cartItems = cartService.getCart(userId);
         if (cartItems.isEmpty()) {
             return Optional.empty();
+
         }
+
 
 
         UserResponse user = userServiceClient.getUserDetails(userId);

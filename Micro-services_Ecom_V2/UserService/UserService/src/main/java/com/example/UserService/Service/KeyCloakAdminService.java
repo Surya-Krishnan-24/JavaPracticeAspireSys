@@ -1,6 +1,8 @@
 package com.example.UserService.Service;
 
 import com.example.UserService.DTO.UserRequest;
+import com.example.UserService.GlobalExceptionHandler.KeycloakAuthenticationException;
+import com.example.UserService.GlobalExceptionHandler.KeycloakUserCreationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -33,13 +35,13 @@ public class KeyCloakAdminService {
     private String realm;
 
     @Value("${keycloak.admin.client-id}")
-    private String clientId;
+    private String adminClientId;
 
     @Value("${keycloak.admin.client}")
-    private String myClientId;
+    private String clientId;
 
     @Value("${keycloak.admin.client-uuid}")
-    private String clientUuid;
+    private String userUuid;
 
     private final RestClient restClient;
 
@@ -47,7 +49,7 @@ public class KeyCloakAdminService {
 
     public String getAdminAccessToken() {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("client_id", clientId);
+        params.add("client_id", adminClientId);
         params.add("username", adminUsername);
         params.add("password", adminPassword);
         params.add("grant_type", "password");
@@ -63,7 +65,7 @@ public class KeyCloakAdminService {
 
             return response.get("access_token").toString();
         } catch (HttpStatusCodeException e) {
-            throw new RuntimeException("Failed to get admin token: " + e.getResponseBodyAsString(), e);
+            throw new KeycloakAuthenticationException("Failed to get admin token: " + e.getResponseBodyAsString());
         }
     }
 
@@ -85,41 +87,39 @@ public class KeyCloakAdminService {
         credential.put("temporary", false);
 
         userPayload.put("credentials", List.of(credential));
+        try {
 
-        ResponseEntity<Void> response = restClient.post()
-                .uri(keycloakServerUrl + "/admin/realms/" + realm + "/users")
-                .headers(httpHeaders -> httpHeaders.addAll(headers))
-                .body(userPayload)
-                .retrieve()
-                .toEntity(Void.class);
 
-        if (!response.getStatusCode().equals(HttpStatus.CREATED)) {
-            throw new RuntimeException("Failed to create user in keycloak. Status: " + response.getStatusCode());
+            ResponseEntity<Void> response = restClient.post()
+                    .uri(keycloakServerUrl + "/admin/realms/" + realm + "/users")
+                    .headers(httpHeaders -> httpHeaders.addAll(headers))
+                    .body(userPayload)
+                    .retrieve()
+                    .toEntity(Void.class);
+
+            if (!response.getStatusCode().equals(HttpStatus.CREATED)) {
+                throw new KeycloakUserCreationException("Failed to create user in keycloak. Status: " + response.getStatusCode());
+            }
+
+            URI location = response.getHeaders().getLocation();
+            if (location == null) {
+                throw new KeycloakUserCreationException("Keycloak did not return Location header.");
+            }
+
+            String path = location.getPath();
+            return path.substring(path.lastIndexOf("/") + 1);
         }
-
-        URI location = response.getHeaders().getLocation();
-        if (location == null) {
-            throw new RuntimeException("Keycloak did not return Location header.");
+        catch (HttpStatusCodeException e){
+            throw new KeycloakUserCreationException("Keycloak error: " + e.getResponseBodyAsString());
         }
-
-        String path = location.getPath();
-        return path.substring(path.lastIndexOf("/") + 1);
     }
 
-    private Map<String, Object> getRealmRoleRepresentation(String token, String roleName) {
-        return restClient.get()
-                .uri(keycloakServerUrl + "/admin/realms/" + realm + "/clients/" + clientUuid + "/roles/" + roleName)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .retrieve()
-                .body(new ParameterizedTypeReference<>() {
-                });
-    }
 
-    public void assignRealmRoleTUser(String roleName, String userId) {
+    public void assignRoleToUser(String roleName, String userId) {
         String token = getAdminAccessToken();
         Map<String, Object> roleRep = getRealmRoleRepresentation(token, roleName);
 
-        String url = keycloakServerUrl + "/admin/realms/" + realm + "/users/" + userId + "/role-mappings/clients/" + clientUuid;
+        String url = keycloakServerUrl + "/admin/realms/" + realm + "/users/" + userId + "/role-mappings/clients/" + userUuid;
 
         restClient.post()
                 .uri(url)
@@ -130,10 +130,19 @@ public class KeyCloakAdminService {
                 .toBodilessEntity();
     }
 
+    private Map<String, Object> getRealmRoleRepresentation(String token, String roleName) {
+        return restClient.get()
+                .uri(keycloakServerUrl + "/admin/realms/" + realm + "/clients/" + userUuid + "/roles/" + roleName)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {
+                });
+    }
+
     public String login(String username, String password) {
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("client_id", myClientId);
+        params.add("client_id", clientId);
         params.add("grant_type", "password");
         params.add("username", username);
         params.add("password", password);
@@ -149,7 +158,7 @@ public class KeyCloakAdminService {
 
             return response != null ? response.get("access_token").toString() : null;
         } catch (Exception e) {
-            throw new RuntimeException("Login failed: " + e.getMessage(), e);
+            throw new KeycloakAuthenticationException("Login failed: " + e.getMessage());
         }
     }
 }

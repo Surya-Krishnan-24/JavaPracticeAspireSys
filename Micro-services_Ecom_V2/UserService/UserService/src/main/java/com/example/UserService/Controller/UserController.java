@@ -65,9 +65,8 @@ public class UserController {
     public ResponseEntity<UserResponse> getUser(@PathVariable String id){
 
         log.info("Request received for user: {}", id);
-        return userService.getUserById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() ->ResponseEntity.notFound().build());
+        UserResponse response =  userService.getUserById(id);
+        return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
     @PreAuthorize("hasAnyRole('SELLER')")

@@ -5,6 +5,7 @@ import com.example.UserService.DTO.AddressResponse;
 import com.example.UserService.DTO.UserLoginRequest;
 import com.example.UserService.DTO.UserRequest;
 import com.example.UserService.DTO.UserResponse;
+import com.example.UserService.GlobalExceptionHandler.ResourceNotFoundException;
 import com.example.UserService.Model.User;
 import com.example.UserService.Model.UserAddress;
 import lombok.RequiredArgsConstructor;
@@ -43,18 +44,22 @@ public class UserService {
         updateUserFromRequest(user,userRequest);
         user.setKeycloakId(keycloakUserId);
 
-        keyCloakAdminService.assignRealmRoleTUser(String.valueOf(user.getRole()),keycloakUserId);
+        keyCloakAdminService.assignRoleToUser(String.valueOf(user.getRole()),keycloakUserId);
         userRepo.save(user);
         streamBridge.send("createUser-out-0", user);
         return "User Added";
     }
 
-    public Optional<UserResponse> getUserById(String id) {
-        return userRepo.findById(id).map(this::mapToUserResponse);
+    public UserResponse getUserById(String id) {
+        return userRepo.findById(id).map(this::mapToUserResponse).orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + id));
     }
 
     public String getUserBySellerName(String sellerName) {
-        return userRepo.findByUsername(sellerName).getEmail();
+        User user = userRepo.findByUsername(sellerName);
+        if (user == null){
+            throw new ResourceNotFoundException("Seller not found with username: " + sellerName);
+        }
+        return user.getEmail();
     }
 
     public UserRequest updateUser(String id, UserRequest userRequest) {
@@ -63,7 +68,7 @@ public class UserService {
                     updateUserFromRequest(existinguser,userRequest);
                     userRepo.save(existinguser);
                     return userRequest;
-                }).orElse(null);
+                }).orElseThrow(() -> new ResourceNotFoundException("Cannot update. User not found with ID: " + id) );
     }
 
     private UserResponse mapToUserResponse(User user){
@@ -129,6 +134,9 @@ public class UserService {
 
     public String getUserIdByKeyCloak(String keycloakId) {
         User user = userRepo.findByKeycloakId(keycloakId);
+        if (user == null){
+            throw new ResourceNotFoundException("User not found with Keycloak ID: " + keycloakId);
+        }
         return user.getId();
     }
 }
