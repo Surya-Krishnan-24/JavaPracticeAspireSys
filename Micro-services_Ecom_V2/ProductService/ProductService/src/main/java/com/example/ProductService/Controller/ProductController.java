@@ -36,7 +36,7 @@ public class ProductController {
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getProductById(@PathVariable int id) {
-        Optional<ProductResponse> productResponse = productService.getProductById(id);
+        Optional<ProductResponse> productResponse = Optional.ofNullable(productService.getProductById(id));
         return productResponse
                 .map(response -> new ResponseEntity<>(response, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
@@ -45,7 +45,8 @@ public class ProductController {
     @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     @GetMapping("/seller/{id}/{sellerName}")
     public ResponseEntity<ProductResponse> getProductByIdOfSeller(@PathVariable int id, @PathVariable String sellerName) {
-        Optional<ProductResponse> productResponse = productService.getProductByIdOfSeller(id, sellerName);
+        System.out.println(sellerName+" "+id);
+        Optional<ProductResponse> productResponse = Optional.ofNullable(productService.getProductByIdOfSeller(id, sellerName));
         return productResponse
                 .map(response -> new ResponseEntity<>(response, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));

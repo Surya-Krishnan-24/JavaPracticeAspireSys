@@ -18,9 +18,8 @@ public class ProductServiceClientConfig {
     public ProductServiceClient productServiceClient(RestClient.Builder restClientBuilder){
         RestClient restClient = restClientBuilder
                 .baseUrl("http://product-service")
-                .defaultStatusHandler(HttpStatusCode::is4xxClientError, (((request, response) -> {
-
-                })))
+                .defaultStatusHandler(HttpStatusCode::is4xxClientError, (((request, response) -> { }
+                )))
                 .build();
         RestClientAdapter adapter = RestClientAdapter.create(restClient);
         HttpServiceProxyFactory factory = HttpServiceProxyFactory.builderFor(adapter).build();

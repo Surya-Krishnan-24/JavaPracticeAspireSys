@@ -40,10 +40,10 @@ public class CartController {
     public ResponseEntity<Void> removeFromCart(
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable int productId) {
+        System.out.println(jwt);
         String userId = cartService.getUserId(jwt);
-        boolean deleted = cartService.deleteItemFromCart(userId, productId);
-        return deleted ? ResponseEntity.noContent().build()
-                : ResponseEntity.notFound().build();
+        cartService.deleteItemFromCart(userId, productId);
+        return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("hasAnyRole('USER')")

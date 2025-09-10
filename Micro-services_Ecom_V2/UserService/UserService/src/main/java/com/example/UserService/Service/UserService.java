@@ -13,7 +13,6 @@ import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -39,19 +38,23 @@ public class UserService {
 
         String token = keyCloakAdminService.getAdminAccessToken();
         String keycloakUserId = keyCloakAdminService.createUser(token,userRequest);
+        keyCloakAdminService.assignRoleToUser(String.valueOf(userRequest.getUserRole()),keycloakUserId);
 
         User user = new User();
         updateUserFromRequest(user,userRequest);
         user.setKeycloakId(keycloakUserId);
 
-        keyCloakAdminService.assignRoleToUser(String.valueOf(user.getRole()),keycloakUserId);
         userRepo.save(user);
+
         streamBridge.send("createUser-out-0", user);
+
         return "User Added";
     }
 
     public UserResponse getUserById(String id) {
-        return userRepo.findById(id).map(this::mapToUserResponse).orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + id));
+        return userRepo.findById(id)
+                .map(this::mapToUserResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + id));
     }
 
     public String getUserBySellerName(String sellerName) {
@@ -63,13 +66,24 @@ public class UserService {
     }
 
     public UserRequest updateUser(String id, UserRequest userRequest) {
-        return userRepo.findById(id)
-                .map(existinguser -> {
-                    updateUserFromRequest(existinguser,userRequest);
-                    userRepo.save(existinguser);
+        return userRepo.findById(id).map(existingUser -> {
+
+                    updateUserFromRequest(existingUser, userRequest);
+                    userRepo.save(existingUser);
+
+                    String adminToken = keyCloakAdminService.getAdminAccessToken();
+
+                    keyCloakAdminService.updateUserInKeycloak(adminToken, existingUser.getKeycloakId(), userRequest);
+
+                    if (userRequest.getPassword() != null && !userRequest.getPassword().isEmpty()) {
+                        keyCloakAdminService.updateUserPasswordInKeycloak(adminToken, existingUser.getKeycloakId(), userRequest.getPassword());
+                    }
+
                     return userRequest;
-                }).orElseThrow(() -> new ResourceNotFoundException("Cannot update. User not found with ID: " + id) );
+                })
+                .orElseThrow(() -> new ResourceNotFoundException("Cannot update. User not found with ID: " + id));
     }
+
 
     private UserResponse mapToUserResponse(User user){
 

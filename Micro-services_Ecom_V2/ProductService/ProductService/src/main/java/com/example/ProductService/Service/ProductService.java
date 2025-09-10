@@ -5,6 +5,8 @@ import com.example.ProductService.DTO.ProductAddedEvent;
 import com.example.ProductService.DTO.ProductQuantityRequest;
 import com.example.ProductService.DTO.ProductRequest;
 import com.example.ProductService.DTO.ProductResponse;
+import com.example.ProductService.GlobalExceptionHandler.ResourceNotFoundException;
+import com.example.ProductService.GlobalExceptionHandler.UnauthorizedException;
 import com.example.ProductService.Model.Product;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.stream.function.StreamBridge;
@@ -12,7 +14,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -63,55 +64,60 @@ public class ProductService {
         return productAddedEvent1;
     }
 
-    public Optional<ProductResponse> getProductById(int id) {
-        return productRepo.findByIdAndActiveTrue(id)
-                .map(this::mapToProductResponse);
+    public ProductResponse getProductById(int id) {
+        Product product = productRepo.findByIdAndActiveTrue(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product with ID " + id + " not found."));
+        return mapToProductResponse(product);
     }
 
-    public Optional<ProductResponse> getProductByIdOfSeller(int id, String seller) {
-        return productRepo.findById(id)
-                .filter(product -> seller != null && seller.equals(product.getSeller()))
-                .map(this::mapToProductResponse);
+
+    public ProductResponse getProductByIdOfSeller(int id, String seller) {
+        Product product = productRepo.findById(id)
+                .filter(p -> seller != null && seller.equals(p.getSeller()))
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found or seller mismatch."));
+        return mapToProductResponse(product);
     }
+
 
     public ProductResponse updateProductBySeller(Authentication authentication, int id, String sellerName, ProductRequest productRequest) {
-        Optional<Product> optionalProduct = productRepo.findById(id);
-        if (optionalProduct.isEmpty()) return null;
-
-        Product product = optionalProduct.get();
+        Product product = productRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product with ID " + id + " not found."));
 
         boolean isAdmin = hasRole(authentication, "ROLE_ADMIN");
         boolean isSeller = hasRole(authentication, "ROLE_SELLER");
 
-        if (isSeller && (product.getSeller() == null || !product.getSeller().equals(sellerName))) return null;
-        if (!isAdmin && !isSeller) return null;
+        if (!isAdmin && !isSeller) {
+            throw new UnauthorizedException("You don't have permission to update this product.");
+        }
+
+        if (isSeller && (product.getSeller() == null || !product.getSeller().equals(sellerName))) {
+            throw new UnauthorizedException("This is product is not created by You.");
+        }
 
         updateProductFromRequest(product, productRequest);
         Product savedProduct = productRepo.save(product);
         return mapToProductResponse(savedProduct);
     }
 
+
     public boolean deleteProduct(int id) {
-        return productRepo.findById(id)
-                .map(product -> {
-                    product.setActive(false);
-                    productRepo.save(product);
-                    return true;
-                }).orElse(false);
+        Product product = productRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product with ID " + id + " not found."));
+        product.setActive(false);
+        productRepo.save(product);
+        return true;
     }
 
+
     public boolean deleteProductBySeller(int id, String seller) {
-        System.out.println(seller);
-        return productRepo.findById(id)
-                .filter(product -> seller != null && seller.equals(product.getSeller()))
-                .map(product -> {
-                    product.setActive(false);
-                    System.out.println(seller);
-                    System.out.println(product.getSeller());
-                    productRepo.save(product);
-                    return true;
-                }).orElse(false);
+        Product product = productRepo.findById(id)
+                .filter(p -> seller != null && seller.equals(p.getSeller()))
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found or seller mismatch."));
+        product.setActive(false);
+        productRepo.save(product);
+        return true;
     }
+
 
     public List<ProductResponse> searchProduct(String keyword) {
         return productRepo.findByNameContainingOrDescriptionContaining(keyword, keyword).stream()
@@ -130,50 +136,44 @@ public class ProductService {
         boolean updated = false;
 
         for (ProductQuantityRequest pqr : productQuantityRequests) {
-            Optional<Product> optionalProduct = productRepo.findById(pqr.getProductId());
+            Product product = productRepo.findById(pqr.getProductId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Product with ID " + pqr.getProductId() + " not found."));
 
-            if (optionalProduct.isPresent()) {
-                Product product = optionalProduct.get();
-
-
-                if (product.getSeller() == null || !product.getSeller().equalsIgnoreCase(sellerName)) {
-                    continue;
-                }
-
-                int newQuantity = pqr.getStockQuantity();
-                product.setStockQuantity(newQuantity);
-                product.setActive(newQuantity > 0);
-
-                productRepo.save(product);
-                updated = true;
+            if (!sellerName.equalsIgnoreCase(product.getSeller())) {
+                throw new UnauthorizedException("You can't update quantity of product ID " + pqr.getProductId());
             }
+
+            int newQuantity = pqr.getStockQuantity();
+            product.setStockQuantity(newQuantity);
+            System.out.println(newQuantity);
+            product.setActive(newQuantity > 0);
+
+            productRepo.save(product);
+            updated = true;
         }
 
         return updated ? "Updated" : "NoMatchingProducts";
     }
+
 
 
     public String updateProductQuantity(List<ProductQuantityRequest> productQuantityRequests) {
         boolean updated = false;
 
         for (ProductQuantityRequest pqr : productQuantityRequests) {
-            Optional<Product> optionalProduct = productRepo.findById(pqr.getProductId());
+            Product product = productRepo.findById(pqr.getProductId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Product with ID " + pqr.getProductId() + " not found."));
 
-            if (optionalProduct.isPresent()) {
-                Product product = optionalProduct.get();
+            int newQuantity = product.getStockQuantity() - pqr.getStockQuantity();
+            product.setStockQuantity(newQuantity);
+            product.setActive(newQuantity > 0);
 
-                int newQuantity = product.getStockQuantity() - pqr.getStockQuantity();
-                product.setStockQuantity(newQuantity);
-                product.setActive(newQuantity > 0);
-
-                productRepo.save(product);
-                updated = true;
-            }
+            productRepo.save(product);
+            updated = true;
         }
 
         return updated ? "Updated" : "NoMatchingProducts";
     }
-
 
 
 

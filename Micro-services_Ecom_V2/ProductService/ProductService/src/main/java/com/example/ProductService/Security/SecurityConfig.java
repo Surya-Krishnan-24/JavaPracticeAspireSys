@@ -22,8 +22,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/**").permitAll()
-                        .requestMatchers("/api/products/**").authenticated()
-                        .anyRequest().permitAll()
+                        .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
@@ -37,11 +36,16 @@ public class SecurityConfig {
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
 
             Map<String, Object> resourceAccess = jwt.getClaimAsMap("resource_access");
+            System.out.println("JWT Claims: " + jwt.getClaims());
             if (resourceAccess == null || !resourceAccess.containsKey("Oauth2")) {
                 return List.of();
             }
+
             Map<String, Object> oauth2 = (Map<String, Object>) resourceAccess.get("Oauth2");
             List<String> roles = (List<String>) oauth2.get("roles");
+
+            System.out.println("JWT Roles: " + roles);
+
 
             return roles.stream()
                     .map(role -> new SimpleGrantedAuthority("ROLE_" + role))

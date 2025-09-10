@@ -33,7 +33,8 @@ public class LoggingAspect {
         Object result;
         try {
             result = joinPoint.proceed();
-        } catch (Throwable ex) {
+        }
+        catch (Throwable ex) {
             log.error("Exception in {}.{}(): {}", className, methodName, ex.getMessage(), ex);
             throw ex;
         }

@@ -88,8 +88,6 @@ public class KeyCloakAdminService {
 
         userPayload.put("credentials", List.of(credential));
         try {
-
-
             ResponseEntity<Void> response = restClient.post()
                     .uri(keycloakServerUrl + "/admin/realms/" + realm + "/users")
                     .headers(httpHeaders -> httpHeaders.addAll(headers))
@@ -113,6 +111,38 @@ public class KeyCloakAdminService {
             throw new KeycloakUserCreationException("Keycloak error: " + e.getResponseBodyAsString());
         }
     }
+
+    public void updateUserInKeycloak(String token, String keycloakUserId, UserRequest userRequest) {
+        Map<String, Object> userPayload = new HashMap<>();
+        userPayload.put("email", userRequest.getEmail());
+        userPayload.put("firstName", userRequest.getFirstName());
+        userPayload.put("lastName", userRequest.getLastName());
+
+        restClient.put()
+                .uri(keycloakServerUrl + "/admin/realms/" + realm + "/users/" + keycloakUserId)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(userPayload)
+                .retrieve()
+                .toBodilessEntity();
+    }
+
+
+    public void updateUserPasswordInKeycloak(String token, String keycloakUserId, String newPassword) {
+        Map<String, Object> credential = new HashMap<>();
+        credential.put("type", "password");
+        credential.put("value", newPassword);
+        credential.put("temporary", false);
+
+        restClient.put()
+                .uri(keycloakServerUrl + "/admin/realms/" + realm + "/users/" + keycloakUserId + "/reset-password")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(credential)
+                .retrieve()
+                .toBodilessEntity();
+    }
+
 
 
     public void assignRoleToUser(String roleName, String userId) {

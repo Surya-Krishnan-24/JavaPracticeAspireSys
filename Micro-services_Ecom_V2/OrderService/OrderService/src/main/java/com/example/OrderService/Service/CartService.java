@@ -6,6 +6,7 @@ import com.example.OrderService.DOA.CartItemRepo;
 import com.example.OrderService.DTO.CartItemRequest;
 import com.example.OrderService.DTO.ProductResponse;
 
+import com.example.OrderService.GlobalExceptionHandler.ResourceNotFoundException;
 import com.example.OrderService.Model.CartItem;
 import jakarta.transaction.Transactional;
 
@@ -30,8 +31,16 @@ public class CartService {
     public boolean addToCart( String userId, CartItemRequest cartItemRequest) {
 
         ProductResponse productResponse = productServiceClient.getProductDetails(cartItemRequest.getProductId());
-        if (productResponse == null || productResponse.getStockQuantity() < cartItemRequest.getQuantity() || userServiceClient.getUserDetails(userId) == null) {
-            return false;
+        if (productResponse == null) {
+            throw new ResourceNotFoundException("Product not found");
+        }
+
+        if (productResponse.getStockQuantity() < cartItemRequest.getQuantity()) {
+            throw new ResourceNotFoundException("Insufficient stock for the product");
+        }
+
+        if (userServiceClient.getUserDetails(userId) == null) {
+            throw new ResourceNotFoundException("User not found");
         }
 
         CartItem existingCartItem = cartItemRepo.findByUserIdAndProductId(userId, cartItemRequest.getProductId());
@@ -52,15 +61,15 @@ public class CartService {
         return true;
     }
 
-    public boolean deleteItemFromCart(String userId, int productId) {
+    public void deleteItemFromCart(String userId, int productId) {
         CartItem cartItem = cartItemRepo.findByUserIdAndProductId(userId, productId);
 
-        if (cartItem != null){
-            cartItemRepo.delete(cartItem);
-            return true;
 
+        if (cartItem == null) {
+            throw new ResourceNotFoundException("Cart item not found");
         }
-        return false;
+
+        cartItemRepo.delete(cartItem);
     }
 
     public List<CartItem> getCart(String userId) {

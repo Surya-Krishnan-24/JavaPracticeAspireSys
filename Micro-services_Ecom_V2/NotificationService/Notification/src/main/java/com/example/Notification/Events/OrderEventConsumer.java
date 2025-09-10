@@ -33,7 +33,7 @@ public class OrderEventConsumer {
 
             int j =1;
             int quantity = 0;
-            for(NotificationOrderResponse i: orderCreatedEvent.getNotificationOrderResponses()){
+            for(NotificationOrderResponse i : orderCreatedEvent.getNotificationOrderResponses()){
                 content.append("\n");
                 content.append(j).append(". ").append(i.getName()).append("\n");
                 content.append("Price of the Product : ").append(i.getPrice()).append("\n");

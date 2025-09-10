@@ -1,6 +1,7 @@
 package com.example.UserService.GlobalExceptionHandler;
 
-import org.springframework.http.HttpStatus;
+
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,7 +18,7 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now(),
                 ex.getMessage(),
                 request.getDescription(false));
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(response, HttpStatusCode.valueOf(404));
     }
 
     @ExceptionHandler(UserAlreadyExistsException.class)
@@ -26,7 +27,7 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now(),
                 ex.getMessage(),
                 request.getDescription(false));
-        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+        return new ResponseEntity<>(response, HttpStatusCode.valueOf(409));
     }
 
     @ExceptionHandler(KeycloakAuthenticationException.class)
@@ -35,7 +36,7 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now(),
                 ex.getMessage(),
                 request.getDescription(false));
-        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(error, HttpStatusCode.valueOf(401));
     }
 
     @ExceptionHandler(KeycloakUserCreationException.class)
@@ -44,7 +45,7 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now(),
                 ex.getMessage(),
                 request.getDescription(false));
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(error, HttpStatusCode.valueOf(400));
     }
 
     @ExceptionHandler(Exception.class)
@@ -53,6 +54,6 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now(),
                 "Internal Server Error",
                 request.getDescription(false));
-        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(response, HttpStatusCode.valueOf(500));
     }
 }

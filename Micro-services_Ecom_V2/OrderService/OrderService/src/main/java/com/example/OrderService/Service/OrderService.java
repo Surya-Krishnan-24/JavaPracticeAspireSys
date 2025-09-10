@@ -3,6 +3,7 @@ package com.example.OrderService.Service;
 
 import com.example.OrderService.Clients.ProductServiceClient;
 import com.example.OrderService.Clients.UserServiceClient;
+import com.example.OrderService.GlobalExceptionHandler.ResourceNotFoundException;
 import org.springframework.cloud.stream.function.StreamBridge;
 import com.example.OrderService.DOA.OrderRepo;
 import com.example.OrderService.DTO.*;
@@ -39,22 +40,18 @@ public class OrderService {
 
         List<CartItem> cartItems = cartService.getCart(userId);
         if (cartItems.isEmpty()) {
-            return Optional.empty();
-
+            throw new ResourceNotFoundException("Cart is empty. Cannot place an order.");
         }
-
-
 
         UserResponse user = userServiceClient.getUserDetails(userId);
         if (user == null) {
-            return Optional.empty();
+            throw new ResourceNotFoundException("User not found for ID: " + userId);
         }
 
 
         BigDecimal totalPrice = cartItems.stream()
                 .map(CartItem::getPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-
 
         Order order = new Order();
         order.setUserId(userId);
