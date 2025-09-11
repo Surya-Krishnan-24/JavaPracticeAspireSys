@@ -1,11 +1,14 @@
 package com.example.Seller.Controller;
 
+import com.example.Seller.Clients.OrderServiceClient;
 import com.example.Seller.Clients.ProductServiceClient;
 import com.example.Seller.Clients.UserServiceClient;
 import com.example.Seller.DTO.*;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -17,6 +20,7 @@ public class SellerController {
 
     private final UserServiceClient userServiceClient;
     private final ProductServiceClient productServiceClient;
+    private final OrderServiceClient orderServiceClient;
 
     @PostMapping("/register")
     public ResponseEntity<String> createSeller(@RequestBody UserRequest userRequest) {
@@ -37,11 +41,11 @@ public class SellerController {
     }
 
     @PreAuthorize("hasRole('SELLER')")
-    @PostMapping("/products/{sellerName}")
-    public ResponseEntity<ProductResponse> createProduct(@PathVariable String sellerName, @RequestBody ProductRequest productRequest) {
+    @PostMapping("/product")
+    public ResponseEntity<ProductResponse> createProduct(@AuthenticationPrincipal Jwt jwt, @RequestBody ProductRequest productRequest) {
+        String sellerName = jwt.getClaimAsString("preferred_username");
         String email = userServiceClient.getUserBySellerName(sellerName);
-        System.out.println(email);
-        return productServiceClient.createProductBySeller(sellerName, productRequest, email);
+        return productServiceClient.createProductBySeller(sellerName,productRequest, email);
     }
 
 
@@ -68,4 +72,20 @@ public class SellerController {
     public ResponseEntity<String> updateProductQuantity(@PathVariable String sellerName, @RequestBody List<ProductQuantityRequest> productQuantityRequests) {
         return productServiceClient.updateProductQuantityBySeller(sellerName, productQuantityRequests);
     }
+
+
+    @PreAuthorize("hasRole('SELLER')")
+    @GetMapping("/orders")
+    public ResponseEntity<List<OrderResponseSeller>> getOrdersForSeller(@AuthenticationPrincipal Jwt jwt) {
+        String sellerName = jwt.getClaimAsString("preferred_username");
+        return orderServiceClient.getOrdersForSeller(sellerName);
+    }
+
+    @PreAuthorize("hasRole('SELLER')")
+    @PutMapping("/orders/{id}")
+    public ResponseEntity<String> updateOrderStatus(@PathVariable int id,@RequestBody OrderStatus status) {
+
+        return orderServiceClient.updateOrderStatus(id, status);
+    }
+
 }

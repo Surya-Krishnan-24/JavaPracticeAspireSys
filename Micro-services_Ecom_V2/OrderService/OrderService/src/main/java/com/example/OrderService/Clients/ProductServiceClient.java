@@ -1,7 +1,9 @@
 package com.example.OrderService.Clients;
 
+import com.example.OrderService.DTO.Product;
 import com.example.OrderService.DTO.ProductQuantityRequest;
 import com.example.OrderService.DTO.ProductResponse;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.service.annotation.GetExchange;
@@ -19,5 +21,6 @@ public interface ProductServiceClient {
     @PutExchange("/api/products/quantity")
     String updateProductQuantity(@RequestBody List<ProductQuantityRequest> productQuantityRequests);
 
-
+    @GetExchange("/api/products/seller/product/{id}")
+    Product getProductByIdSeller(@PathVariable int id);
 }

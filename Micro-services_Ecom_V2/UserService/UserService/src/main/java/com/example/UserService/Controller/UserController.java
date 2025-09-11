@@ -4,6 +4,7 @@ package com.example.UserService.Controller;
 import com.example.UserService.DTO.UserLoginRequest;
 import com.example.UserService.DTO.UserRequest;
 import com.example.UserService.DTO.UserResponse;
+import com.example.UserService.Model.UserAddress;
 import com.example.UserService.Model.UserRole;
 import com.example.UserService.Service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -60,21 +61,24 @@ public class UserController {
 
         return new ResponseEntity<>(userService.loginUser(userLoginRequest),HttpStatus.OK);
     }
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER','SELLER')")
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUser(@PathVariable String id){
 
         log.info("Request received for user: {}", id);
         UserResponse response =  userService.getUserById(id);
-        return new ResponseEntity<>(response,HttpStatus.OK);
+        if (response != null) {
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        else {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
     }
 
     @PreAuthorize("hasAnyRole('SELLER')")
     @GetMapping("/seller/{sellername}")
     public String getUserBySellerName(@PathVariable String sellername){
-        String user = userService.getUserBySellerName(sellername);
-        System.out.println(user);
-        return user;
+        return userService.getUserBySellerName(sellername);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
@@ -93,4 +97,23 @@ public class UserController {
         return userService.getUserIdByKeyCloak(keycloakId);
     }
 
+
+    @PreAuthorize("hasAnyRole('SELLER')")
+    @GetMapping("/fullname/{id}")
+    public String getUsername(@PathVariable String id){
+
+        return userService.getUserFullNameById(id);
+    }
+
+    @PreAuthorize("hasAnyRole('SELLER')")
+    @GetMapping("/address/{id}")
+    public UserAddress getUserAddress(@PathVariable String id){
+        return userService.getUserAddressById(id);
+    }
+
+    @PreAuthorize("hasAnyRole('SELLER')")
+    @GetMapping("/email/{id}")
+    public String getUserEmail(@PathVariable String id){
+        return userService.getUserEmail(id);
+    }
 }
