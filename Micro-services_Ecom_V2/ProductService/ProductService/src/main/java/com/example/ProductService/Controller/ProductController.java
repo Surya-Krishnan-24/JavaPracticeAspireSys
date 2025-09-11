@@ -3,6 +3,7 @@ package com.example.ProductService.Controller;
 import com.example.ProductService.DTO.ProductQuantityRequest;
 import com.example.ProductService.DTO.ProductRequest;
 import com.example.ProductService.DTO.ProductResponse;
+import com.example.ProductService.Model.Product;
 import com.example.ProductService.Service.ProductService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -138,5 +139,11 @@ public class ProductController {
                     .body("USER cannot cannot modify product quantity ");
         }
 
+    }
+
+    @PreAuthorize("hasRole('SELLER')")
+    @GetMapping("/seller/product/{id}")
+    public Product getProductByIdSeller(@PathVariable int id) {
+        return productService.getProductByIdSeller(id);
     }
 }

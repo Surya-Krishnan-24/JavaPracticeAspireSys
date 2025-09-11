@@ -38,8 +38,7 @@ public class CartService {
         if (productResponse.getStockQuantity() < cartItemRequest.getQuantity()) {
             throw new ResourceNotFoundException("Insufficient stock for the product");
         }
-
-        if (userServiceClient.getUserDetails(userId) == null) {
+        if (userServiceClient.getUser(userId) == null) {
             throw new ResourceNotFoundException("User not found");
         }
 

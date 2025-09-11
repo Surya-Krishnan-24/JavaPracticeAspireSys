@@ -13,6 +13,7 @@ import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -52,9 +53,9 @@ public class UserService {
     }
 
     public UserResponse getUserById(String id) {
-        return userRepo.findById(id)
-                .map(this::mapToUserResponse)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + id));
+        Optional<User> user =  userRepo.findById(id);
+        return user.map(this::mapToUserResponse).orElse(null);
+
     }
 
     public String getUserBySellerName(String sellerName) {
@@ -152,6 +153,23 @@ public class UserService {
             throw new ResourceNotFoundException("User not found with Keycloak ID: " + keycloakId);
         }
         return user.getId();
+    }
+
+    public String getUserFullNameById(String id) {
+        Optional<User> user =  userRepo.findById(id);
+        String fullname = user.get().getFirstName() + " "+ user.get().getLastName();
+        return fullname;
+
+    }
+
+    public UserAddress getUserAddressById(String id) {
+        Optional<User> user =  userRepo.findById(id);
+        return user.get().getUserAddress();
+    }
+
+    public String getUserEmail(String id) {
+        Optional<User> user =  userRepo.findById(id);
+        return user.get().getEmail();
     }
 }
 

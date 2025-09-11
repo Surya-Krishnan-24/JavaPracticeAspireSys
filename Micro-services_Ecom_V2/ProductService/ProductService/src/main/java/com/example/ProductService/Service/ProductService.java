@@ -14,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -205,5 +206,10 @@ public class ProductService {
     private boolean hasRole(Authentication auth, String role) {
         return auth != null && auth.getAuthorities().stream()
                 .anyMatch(granted -> granted.getAuthority().equals(role));
+    }
+
+    public Product getProductByIdSeller(int id) {
+        Optional<Product> product = productRepo.findById(id);
+        return product.get();
     }
 }

@@ -7,6 +7,7 @@ import com.example.OrderService.GlobalExceptionHandler.ResourceNotFoundException
 import org.springframework.cloud.stream.function.StreamBridge;
 import com.example.OrderService.DOA.OrderRepo;
 import com.example.OrderService.DTO.*;
+import com.example.OrderService.DTO.UserResponse;
 import com.example.OrderService.Model.CartItem;
 import com.example.OrderService.Model.Order;
 import com.example.OrderService.Model.OrderItem;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -43,7 +45,7 @@ public class OrderService {
             throw new ResourceNotFoundException("Cart is empty. Cannot place an order.");
         }
 
-        UserResponse user = userServiceClient.getUserDetails(userId);
+        UserResponse user = userServiceClient.getUser(userId);
         if (user == null) {
             throw new ResourceNotFoundException("User not found for ID: " + userId);
         }
@@ -55,7 +57,7 @@ public class OrderService {
 
         Order order = new Order();
         order.setUserId(userId);
-        order.setStatus(OrderStatus.CONFIRMED);
+        order.setStatus(OrderStatus.PENDING);
         order.setTotalAmount(totalPrice);
 
         List<OrderItem> orderItems = cartItems.stream()
@@ -133,5 +135,81 @@ public class OrderService {
     public String getUserId(Jwt jwt) {
         String keycloakId = jwt.getSubject();
         return userServiceClient.getUserDetailsByKeycloak(keycloakId);
+    }
+
+    public List<OrderResponse> getOrder(String userId) {
+        return orderRepo.findByUserId(userId).stream()
+                .map(this::mapToOrderResponse)
+                .toList();
+    }
+
+    public List<OrderResponseSeller> getOrdersForSeller(String sellerName) {
+        List<Order> allOrders = orderRepo.findAll();
+        List<OrderResponseSeller> responseList = new ArrayList<>();
+
+        for (Order order : allOrders) {
+            List<OrderItem> sellerItems = new ArrayList<>();
+
+            for (OrderItem item : order.getItems()) {
+                Product product = productServiceClient.getProductByIdSeller(item.getProductId());
+                if (product != null && sellerName.equals(product.getSeller())) {
+                    sellerItems.add(item);
+                }
+            }
+
+            if (!sellerItems.isEmpty()) {
+                OrderResponseSeller response = new OrderResponseSeller();
+                response.setOrderID(order.getOrder_id());
+                response.setOrderStatus(String.valueOf(order.getStatus()));
+
+
+                List<ProductsOrderResponse> productResponses = sellerItems.stream()
+                        .map(item -> {
+                            Product product = productServiceClient.getProductByIdSeller(item.getProductId());
+
+                            ProductsOrderResponse p = new ProductsOrderResponse();
+                            p.setProductId(item.getProductId());
+                            p.setProductName(product.getName());
+                            p.setQuantity(item.getQuantity());
+                            p.setPrice(item.getPrice().intValue());
+                            return p;
+                        }).collect(Collectors.toList());
+
+                response.setProductsOrderResponses(productResponses);
+
+                response.setName(userServiceClient.getUsername(order.getUserId()));
+
+                UserAddress userAddress = userServiceClient.getUserAddress(order.getUserId());
+                if (userAddress!= null) {
+                    response.setAddressResponse(userAddress);
+                }
+
+                responseList.add(response);
+            }
+        }
+
+        return responseList.stream().sorted((a, b) -> a.getOrderID() - b.getOrderID()).toList();
+    }
+
+    public String updateOrderStatus(int id, OrderStatus status) {
+        Optional<Order> order = orderRepo.findById(id);
+        order.get().setStatus(status);
+        orderRepo.save(order.get());
+        OrderUpdatedEvent orderUpdatedEvent = new OrderUpdatedEvent();
+        orderUpdatedEvent.setOrderId(order.get().getOrder_id());
+
+        List<String> productnames = new ArrayList<>();
+        for(OrderItem p : order.get().getItems()) {
+            Product product = productServiceClient.getProductByIdSeller(p.getProductId());
+            productnames.add(product.getName());
+        }
+        orderUpdatedEvent.setProductNames(productnames);
+        orderUpdatedEvent.setOrderStatus(status);
+
+        UserResponse userResponse = userServiceClient.getUser(order.get().getUserId());
+        orderUpdatedEvent.setUserEmail(userResponse.getEmail());
+        orderUpdatedEvent.setUserName(userResponse.getFirstName());
+        streamBridge.send("orderUpdated-out-0", orderUpdatedEvent);
+        return "UPDATED";
     }
 }

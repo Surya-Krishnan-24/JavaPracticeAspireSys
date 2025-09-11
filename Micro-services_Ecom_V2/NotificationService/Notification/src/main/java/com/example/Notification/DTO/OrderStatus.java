@@ -1,4 +1,4 @@
-package com.example.OrderService.Model;
+package com.example.Notification.DTO;
 
 public enum OrderStatus {
     PENDING,

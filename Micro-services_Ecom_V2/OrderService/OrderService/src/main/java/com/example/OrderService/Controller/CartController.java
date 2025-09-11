@@ -28,7 +28,6 @@ public class CartController {
             @RequestBody CartItemRequest request) {
 
         String userId = cartService.getUserId(jwt);
-        System.out.println(userId);
         if (!cartService.addToCart(userId, request)) {
             return ResponseEntity.badRequest().body("Product Out of Stock or User not found or Product not found");
         }

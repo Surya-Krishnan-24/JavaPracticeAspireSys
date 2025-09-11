@@ -39,4 +39,6 @@ public interface ProductServiceClient {
 
     @PutExchange("/quantity/seller/{sellerName}")
     ResponseEntity<String> updateProductQuantityBySeller(@PathVariable String sellerName, @RequestBody List<ProductQuantityRequest> productQuantityRequests);
+
+
 }
