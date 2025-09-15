@@ -8,6 +8,8 @@ import com.example.OrderService.DTO.ProductResponse;
 
 import com.example.OrderService.GlobalExceptionHandler.ResourceNotFoundException;
 import com.example.OrderService.Model.CartItem;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import jakarta.transaction.Transactional;
 
 import lombok.RequiredArgsConstructor;
@@ -28,10 +30,13 @@ public class CartService {
 
     private final UserServiceClient userServiceClient;
 
-    public boolean addToCart( String userId, CartItemRequest cartItemRequest) {
 
+    @CircuitBreaker(name = "addToCartService", fallbackMethod = "addToCartFallback")
+    @Retry(name = "retryBreaker", fallbackMethod = "addToCartFallback")
+    public boolean addToCart( String userId, CartItemRequest cartItemRequest) {
         ProductResponse productResponse = productServiceClient.getProductDetails(cartItemRequest.getProductId());
-        if (productResponse == null) {
+
+        if (productResponse.getId() == 0) {
             throw new ResourceNotFoundException("Product not found");
         }
 
@@ -60,6 +65,17 @@ public class CartService {
         return true;
     }
 
+    public boolean addToCartFallback(String userId, CartItemRequest cartItemRequest, Exception e) {
+        if (e instanceof ResourceNotFoundException) {
+
+            throw new ResourceNotFoundException(e.getMessage());
+        }
+
+
+        return false;
+    }
+
+
     public void deleteItemFromCart(String userId, int productId) {
         CartItem cartItem = cartItemRepo.findByUserIdAndProductId(userId, productId);
 
@@ -79,9 +95,16 @@ public class CartService {
         cartItemRepo.deleteByUserId(userId);
     }
 
+    @CircuitBreaker(name = "getUserIdService", fallbackMethod = "getUserIdFallback")
+    @Retry(name = "retryBreaker", fallbackMethod = "addToCartFallback")
     public String getUserId(Jwt jwt) {
         String keycloakId = jwt.getSubject();
         return userServiceClient.getUserDetailsByKeycloak(keycloakId);
 
+    }
+
+    public String getUserIdFallback(Jwt jwt,Exception e) {
+
+        return "Service Down";
     }
 }

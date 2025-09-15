@@ -3,7 +3,6 @@ package com.example.OrderService.Controller;
 
 import com.example.OrderService.DTO.OrderResponse;
 import com.example.OrderService.DTO.OrderResponseSeller;
-import com.example.OrderService.Model.Order;
 import com.example.OrderService.Model.OrderStatus;
 import com.example.OrderService.Service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +13,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -28,16 +26,19 @@ public class OrderController {
     public ResponseEntity<OrderResponse> createOrder(
             @AuthenticationPrincipal Jwt jwt) {
         String userId = orderService.getUserId(jwt);
-        return orderService.createOrder(userId)
+        if(userId.equals("Service Down")){
+            return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+        }
+        return orderService.createOrder(userId).filter(orderResponse -> orderResponse.getId() != 0)
                 .map(orderResponse -> new ResponseEntity<>(orderResponse, HttpStatus.CREATED))
-                .orElseGet(() -> ResponseEntity.badRequest().build());
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(null));
     }
 
     @PreAuthorize("hasRole('USER')")
     @GetMapping
     public ResponseEntity<List<OrderResponse>> getOrder(
             @AuthenticationPrincipal Jwt jwt) {
-        List<OrderResponse> orderResponse = new ArrayList<>();
+        List<OrderResponse> orderResponse;
         String userId = orderService.getUserId(jwt);
         orderResponse = orderService.getOrder(userId);
 
