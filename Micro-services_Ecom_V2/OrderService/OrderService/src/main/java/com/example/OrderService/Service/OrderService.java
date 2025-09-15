@@ -4,6 +4,7 @@ package com.example.OrderService.Service;
 import com.example.OrderService.Clients.ProductServiceClient;
 import com.example.OrderService.Clients.UserServiceClient;
 import com.example.OrderService.GlobalExceptionHandler.ResourceNotFoundException;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.cloud.stream.function.StreamBridge;
 import com.example.OrderService.DOA.OrderRepo;
 import com.example.OrderService.DTO.*;
@@ -38,6 +39,7 @@ public class OrderService {
 
     private final StreamBridge streamBridge;
 
+    @CircuitBreaker(name = "createOrderService", fallbackMethod = "createOrderFallback")
     public Optional<OrderResponse> createOrder(String userId) {
 
         List<CartItem> cartItems = cartService.getCart(userId);
@@ -114,6 +116,14 @@ public class OrderService {
         return Optional.of(mapToOrderResponse(savedOrder));
     }
 
+    public boolean createOrderFallback(String userId,Exception e) {
+        if (e instanceof ResourceNotFoundException) {
+            throw new ResourceNotFoundException(e.getMessage());
+        }
+
+        return false;
+    }
+
     private OrderResponse mapToOrderResponse(Order order) {
         return new OrderResponse(
                 order.getOrder_id(),
@@ -132,9 +142,15 @@ public class OrderService {
         );
     }
 
+    @CircuitBreaker(name = "getUserIdService", fallbackMethod = "getUserIdFallback")
     public String getUserId(Jwt jwt) {
         String keycloakId = jwt.getSubject();
         return userServiceClient.getUserDetailsByKeycloak(keycloakId);
+    }
+
+    public String getUserIdFallback(Jwt jwt,Exception e) {
+
+        return "Service Down";
     }
 
     public List<OrderResponse> getOrder(String userId) {
@@ -198,12 +214,12 @@ public class OrderService {
         OrderUpdatedEvent orderUpdatedEvent = new OrderUpdatedEvent();
         orderUpdatedEvent.setOrderId(order.get().getOrder_id());
 
-        List<String> productnames = new ArrayList<>();
+        List<String> productNames = new ArrayList<>();
         for(OrderItem p : order.get().getItems()) {
             Product product = productServiceClient.getProductByIdSeller(p.getProductId());
-            productnames.add(product.getName());
+            productNames.add(product.getName());
         }
-        orderUpdatedEvent.setProductNames(productnames);
+        orderUpdatedEvent.setProductNames(productNames);
         orderUpdatedEvent.setOrderStatus(status);
 
         UserResponse userResponse = userServiceClient.getUser(order.get().getUserId());

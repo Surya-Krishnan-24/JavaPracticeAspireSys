@@ -1,4 +1,6 @@
 package com.example.ApiGateway.Security;
+import org.springframework.cloud.gateway.route.RouteLocator;
+import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -36,6 +38,54 @@ public class SecurityConfig {
                         jwt.jwtAuthenticationConverter(grantedAuthoritiesExtractor())))
                 .build();
     }
+
+    @Bean
+    public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
+        return builder.routes()
+                .route("product-service", r -> r.path("/products/**")
+                        .filters(f -> f
+                                .rewritePath("/products/(?<segment>.*)", "/api/products/${segment}")
+                                .circuitBreaker(c -> c
+                                        .setName("productBreaker")
+                                        .setFallbackUri("forward:/fallback/products")))
+                        .uri("lb://product-service"))
+
+                .route("user-service", r -> r.path("/users/**")
+                        .filters(f -> f
+                                .rewritePath("/users/(?<segment>.*)", "/api/users/${segment}")
+                                .circuitBreaker(c -> c
+                                        .setName("userBreaker")
+                                        .setFallbackUri("forward:/fallback/user")))
+                        .uri("lb://user-service"))
+
+                .route("order-service", r -> r.path("/orders/**", "/cart/**", "/cart")
+                        .filters(f -> f.circuitBreaker(c -> c
+                                .setName("orderBreaker")
+                                .setFallbackUri("forward:/fallback/order")))
+                        .uri("lb://order-service"))
+
+                .route("admin-service", r -> r.path("/admin/**")
+                        .filters(f -> f.circuitBreaker(c -> c
+                                .setName("adminBreaker")
+                                .setFallbackUri("forward:/fallback/admin")))
+                        .uri("lb://admin-service"))
+
+                .route("seller-service", r -> r.path("/seller/**")
+                        .filters(f -> f.circuitBreaker(c -> c
+                                .setName("sellerBreaker")
+                                .setFallbackUri("forward:/fallback/seller")))
+                        .uri("lb://seller-service"))
+
+                .route("eureka-server-main", r -> r.path("/eureka/main")
+                        .filters(f -> f.setPath("/"))
+                        .uri("http://localhost:8761"))
+
+                .route("eureka-server-static", r -> r.path("/eureka/**")
+                        .uri("http://localhost:8761"))
+                .build();
+    }
+
+
 
     private Converter<Jwt, Mono<AbstractAuthenticationToken>> grantedAuthoritiesExtractor(){
 

@@ -28,8 +28,11 @@ public class CartController {
             @RequestBody CartItemRequest request) {
 
         String userId = cartService.getUserId(jwt);
+        if(userId.equals("Service Down")){
+            return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+        }
         if (!cartService.addToCart(userId, request)) {
-            return ResponseEntity.badRequest().body("Product Out of Stock or User not found or Product not found");
+            return new ResponseEntity<>("Service Not available try after sometime...",HttpStatus.SERVICE_UNAVAILABLE);
         }
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
