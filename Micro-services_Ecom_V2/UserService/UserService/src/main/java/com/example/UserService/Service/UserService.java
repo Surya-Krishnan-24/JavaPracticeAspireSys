@@ -157,8 +157,7 @@ public class UserService {
 
     public String getUserFullNameById(String id) {
         Optional<User> user =  userRepo.findById(id);
-        String fullname = user.get().getFirstName() + " "+ user.get().getLastName();
-        return fullname;
+        return user.get().getFirstName() + " "+ user.get().getLastName();
 
     }
 

@@ -19,12 +19,14 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/orders")
 public class OrderController {
+
     private final OrderService orderService;
 
     @PreAuthorize("hasRole('USER')")
     @PostMapping
     public ResponseEntity<OrderResponse> createOrder(
             @AuthenticationPrincipal Jwt jwt) {
+
         String userId = orderService.getUserId(jwt);
         if(userId.equals("Service Down")){
             return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);

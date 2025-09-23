@@ -32,15 +32,15 @@ public class CallableThread1 {
 
         Future<Integer> future1 = service.submit(task);
 
-        Integer data1 = future1.get();
+        future1.get();
 
-        System.out.println(data1);
+        System.out.println(counter1.count);
 
         System.out.println("Other operations");
 
         Integer data = future.get();
 
-        System.out.println(data);
+        System.out.println(counter1.count);
 
         service.shutdown();
     }

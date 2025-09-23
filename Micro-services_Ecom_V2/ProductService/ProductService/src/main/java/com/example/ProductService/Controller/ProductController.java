@@ -75,8 +75,8 @@ public class ProductController {
     public ResponseEntity<Boolean> deleteProduct(@PathVariable int id) {
         boolean statusOfDeletion = productService.deleteProduct(id);
         return statusOfDeletion
-                ? new ResponseEntity<>(statusOfDeletion, HttpStatus.OK)
-                : new ResponseEntity<>(statusOfDeletion, HttpStatus.NO_CONTENT);
+                ? new ResponseEntity<>(true, HttpStatus.OK)
+                : new ResponseEntity<>(false, HttpStatus.NO_CONTENT);
     }
 
     @PreAuthorize("hasRole('SELLER')")
@@ -119,13 +119,14 @@ public class ProductController {
     @PreAuthorize("hasRole('USER')")
     @PutMapping("/quantity")
     public ResponseEntity<String> updateProductQuantity(@RequestHeader(value = "X-Forwarded-By", required = false) String forwardedBy, @RequestBody List<ProductQuantityRequest> productQuantityRequests) {
-        if(forwardedBy !=null) {
+        if(forwardedBy != null) {
             if (forwardedBy.equals("OrderService")) {
                 String response = productService.updateProductQuantity(productQuantityRequests);
 
                 if ("Updated".equals(response)) {
                     return ResponseEntity.ok("Quantity Updated");
-                } else {
+                } else
+                {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND)
                             .body("No products matched ");
                 }

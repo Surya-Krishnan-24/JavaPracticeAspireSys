@@ -36,6 +36,7 @@ public class ProductService {
                 .filter(product -> sellerName != null && sellerName.equals(product.getSeller()))
                 .map(this::mapToProductResponse)
                 .collect(Collectors.toList());
+        
     }
 
     public ProductResponse createProduct(ProductRequest productRequest, String email) {
@@ -146,7 +147,6 @@ public class ProductService {
 
             int newQuantity = pqr.getStockQuantity();
             product.setStockQuantity(newQuantity);
-            System.out.println(newQuantity);
             product.setActive(newQuantity > 0);
 
             productRepo.save(product);
