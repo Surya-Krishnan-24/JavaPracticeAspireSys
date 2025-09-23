@@ -1,0 +1,331 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ProductService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.example.ProductService.Service</a>
+</div>
+
+<h1>Coverage Summary for Class: ProductService (com.example.ProductService.Service)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ProductService</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    88.2%
+  </span>
+  <span class="absValue">
+    (15/17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    55.6%
+  </span>
+  <span class="absValue">
+    (20/36)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    88%
+  </span>
+  <span class="absValue">
+    (95/108)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.example.ProductService.Service;
+&nbsp;
+&nbsp;import com.example.ProductService.DOA.ProductRepo;
+&nbsp;import com.example.ProductService.DTO.ProductAddedEvent;
+&nbsp;import com.example.ProductService.DTO.ProductQuantityRequest;
+&nbsp;import com.example.ProductService.DTO.ProductRequest;
+&nbsp;import com.example.ProductService.DTO.ProductResponse;
+&nbsp;import com.example.ProductService.GlobalExceptionHandler.ResourceNotFoundException;
+&nbsp;import com.example.ProductService.GlobalExceptionHandler.UnauthorizedException;
+&nbsp;import com.example.ProductService.Model.Product;
+&nbsp;import lombok.RequiredArgsConstructor;
+&nbsp;import org.springframework.cloud.stream.function.StreamBridge;
+&nbsp;import org.springframework.security.core.Authentication;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Optional;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;
+&nbsp;@Service
+&nbsp;@RequiredArgsConstructor
+&nbsp;public class ProductService {
+&nbsp;
+&nbsp;    private final ProductRepo productRepo;
+&nbsp;    private final StreamBridge streamBridge;
+&nbsp;
+&nbsp;
+&nbsp;    public List&lt;ProductResponse&gt; getAllProducts() {
+<b class="fc">&nbsp;        return productRepo.findByActiveTrue().stream()</b>
+<b class="fc">&nbsp;                .map(this::mapToProductResponse)</b>
+<b class="fc">&nbsp;                .collect(Collectors.toList());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;ProductResponse&gt; getAllProductsBySeller(String sellerName) {
+<b class="fc">&nbsp;        return productRepo.findByActiveTrue().stream()</b>
+<b class="pc">&nbsp;                .filter(product -&gt; sellerName != null &amp;&amp; sellerName.equals(product.getSeller()))</b>
+<b class="fc">&nbsp;                .map(this::mapToProductResponse)</b>
+<b class="fc">&nbsp;                .collect(Collectors.toList());</b>
+&nbsp;        
+&nbsp;    }
+&nbsp;
+&nbsp;    public ProductResponse createProduct(ProductRequest productRequest, String email) {
+<b class="fc">&nbsp;        Product product = new Product();</b>
+<b class="fc">&nbsp;        updateProductFromRequest(product, productRequest);</b>
+<b class="fc">&nbsp;        Product savedProduct = productRepo.save(product);</b>
+<b class="fc">&nbsp;        ProductAddedEvent productAddedEvent1 = new ProductAddedEvent();</b>
+<b class="fc">&nbsp;        ProductAddedEvent productAddedEvent = mapToProductEvent(savedProduct,productAddedEvent1);</b>
+<b class="fc">&nbsp;        productAddedEvent.setSellerEmail(email);</b>
+<b class="fc">&nbsp;        streamBridge.send(&quot;createProduct-out-0&quot;, productAddedEvent);</b>
+&nbsp;
+<b class="fc">&nbsp;        return mapToProductResponse(savedProduct);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private ProductAddedEvent mapToProductEvent(Product savedProduct, ProductAddedEvent productAddedEvent1) {
+<b class="fc">&nbsp;        productAddedEvent1.setId(savedProduct.getId());</b>
+<b class="fc">&nbsp;        productAddedEvent1.setName(savedProduct.getName());</b>
+<b class="fc">&nbsp;        productAddedEvent1.setActive(savedProduct.getActive());</b>
+<b class="fc">&nbsp;        productAddedEvent1.setDescription(savedProduct.getDescription());</b>
+<b class="fc">&nbsp;        productAddedEvent1.setCategory(savedProduct.getCategory());</b>
+<b class="fc">&nbsp;        productAddedEvent1.setPrice(savedProduct.getPrice());</b>
+<b class="fc">&nbsp;        productAddedEvent1.setSeller(savedProduct.getSeller());</b>
+<b class="fc">&nbsp;        productAddedEvent1.setImageUrl(savedProduct.getImageUrl());</b>
+<b class="fc">&nbsp;        productAddedEvent1.setStockQuantity(savedProduct.getStockQuantity());</b>
+<b class="fc">&nbsp;        productAddedEvent1.setCreatedAt(savedProduct.getCreatedAt());</b>
+<b class="fc">&nbsp;        productAddedEvent1.setUpdatedAt(savedProduct.getUpdatedAt());</b>
+<b class="fc">&nbsp;        return productAddedEvent1;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public ProductResponse getProductById(int id) {
+<b class="fc">&nbsp;        Product product = productRepo.findByIdAndActiveTrue(id)</b>
+<b class="fc">&nbsp;                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Product with ID &quot; + id + &quot; not found.&quot;));</b>
+<b class="fc">&nbsp;        return mapToProductResponse(product);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    public ProductResponse getProductByIdOfSeller(int id, String seller) {
+<b class="fc">&nbsp;        Product product = productRepo.findById(id)</b>
+<b class="pc">&nbsp;                .filter(p -&gt; seller != null &amp;&amp; seller.equals(p.getSeller()))</b>
+<b class="fc">&nbsp;                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Product not found or seller mismatch.&quot;));</b>
+<b class="fc">&nbsp;        return mapToProductResponse(product);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    public ProductResponse updateProductBySeller(Authentication authentication, int id, String sellerName, ProductRequest productRequest) {
+<b class="fc">&nbsp;        Product product = productRepo.findById(id)</b>
+<b class="fc">&nbsp;                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Product with ID &quot; + id + &quot; not found.&quot;));</b>
+&nbsp;
+<b class="fc">&nbsp;        boolean isAdmin = hasRole(authentication, &quot;ROLE_ADMIN&quot;);</b>
+<b class="fc">&nbsp;        boolean isSeller = hasRole(authentication, &quot;ROLE_SELLER&quot;);</b>
+&nbsp;
+<b class="pc">&nbsp;        if (!isAdmin &amp;&amp; !isSeller) {</b>
+<b class="nc">&nbsp;            throw new UnauthorizedException(&quot;You don&#39;t have permission to update this product.&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="pc">&nbsp;        if (isSeller &amp;&amp; (product.getSeller() == null || !product.getSeller().equals(sellerName))) {</b>
+<b class="fc">&nbsp;            throw new UnauthorizedException(&quot;This is product is not created by You.&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        updateProductFromRequest(product, productRequest);</b>
+<b class="fc">&nbsp;        Product savedProduct = productRepo.save(product);</b>
+<b class="fc">&nbsp;        return mapToProductResponse(savedProduct);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    public boolean deleteProduct(int id) {
+<b class="fc">&nbsp;        Product product = productRepo.findById(id)</b>
+<b class="fc">&nbsp;                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Product with ID &quot; + id + &quot; not found.&quot;));</b>
+<b class="fc">&nbsp;        product.setActive(false);</b>
+<b class="fc">&nbsp;        productRepo.save(product);</b>
+<b class="fc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    public boolean deleteProductBySeller(int id, String seller) {
+<b class="fc">&nbsp;        Product product = productRepo.findById(id)</b>
+<b class="pc">&nbsp;                .filter(p -&gt; seller != null &amp;&amp; seller.equals(p.getSeller()))</b>
+<b class="fc">&nbsp;                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Product not found or seller mismatch.&quot;));</b>
+<b class="fc">&nbsp;        product.setActive(false);</b>
+<b class="fc">&nbsp;        productRepo.save(product);</b>
+<b class="fc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    public List&lt;ProductResponse&gt; searchProduct(String keyword) {
+<b class="fc">&nbsp;        return productRepo.findByNameContainingOrDescriptionContaining(keyword, keyword).stream()</b>
+<b class="fc">&nbsp;                .map(this::mapToProductResponse)</b>
+<b class="fc">&nbsp;                .collect(Collectors.toList());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;ProductResponse&gt; searchProductBySeller(String keyword, String seller) {
+<b class="fc">&nbsp;        return productRepo.findByNameContainingOrDescriptionContaining(keyword, keyword).stream()</b>
+<b class="pc">&nbsp;                .filter(product -&gt; seller != null &amp;&amp; seller.equals(product.getSeller()))</b>
+<b class="fc">&nbsp;                .map(this::mapToProductResponse)</b>
+<b class="fc">&nbsp;                .collect(Collectors.toList());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String updateProductQuantityBySeller(String sellerName, List&lt;ProductQuantityRequest&gt; productQuantityRequests) {
+<b class="fc">&nbsp;        boolean updated = false;</b>
+&nbsp;
+<b class="fc">&nbsp;        for (ProductQuantityRequest pqr : productQuantityRequests) {</b>
+<b class="fc">&nbsp;            Product product = productRepo.findById(pqr.getProductId())</b>
+<b class="fc">&nbsp;                    .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Product with ID &quot; + pqr.getProductId() + &quot; not found.&quot;));</b>
+&nbsp;
+<b class="fc">&nbsp;            if (!sellerName.equalsIgnoreCase(product.getSeller())) {</b>
+<b class="fc">&nbsp;                throw new UnauthorizedException(&quot;You can&#39;t update quantity of product ID &quot; + pqr.getProductId());</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            int newQuantity = pqr.getStockQuantity();</b>
+<b class="fc">&nbsp;            product.setStockQuantity(newQuantity);</b>
+<b class="pc">&nbsp;            product.setActive(newQuantity &gt; 0);</b>
+&nbsp;
+<b class="fc">&nbsp;            productRepo.save(product);</b>
+<b class="fc">&nbsp;            updated = true;</b>
+&nbsp;        }
+&nbsp;
+<b class="pc">&nbsp;        return updated ? &quot;Updated&quot; : &quot;NoMatchingProducts&quot;;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;    public String updateProductQuantity(List&lt;ProductQuantityRequest&gt; productQuantityRequests) {
+<b class="nc">&nbsp;        boolean updated = false;</b>
+&nbsp;
+<b class="nc">&nbsp;        for (ProductQuantityRequest pqr : productQuantityRequests) {</b>
+<b class="nc">&nbsp;            Product product = productRepo.findById(pqr.getProductId())</b>
+<b class="nc">&nbsp;                    .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Product with ID &quot; + pqr.getProductId() + &quot; not found.&quot;));</b>
+&nbsp;
+<b class="nc">&nbsp;            int newQuantity = product.getStockQuantity() - pqr.getStockQuantity();</b>
+<b class="nc">&nbsp;            product.setStockQuantity(newQuantity);</b>
+<b class="nc">&nbsp;            product.setActive(newQuantity &gt; 0);</b>
+&nbsp;
+<b class="nc">&nbsp;            productRepo.save(product);</b>
+<b class="nc">&nbsp;            updated = true;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return updated ? &quot;Updated&quot; : &quot;NoMatchingProducts&quot;;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;    private void updateProductFromRequest(Product product, ProductRequest productRequest) {
+<b class="fc">&nbsp;        product.setName(productRequest.getName());</b>
+<b class="fc">&nbsp;        product.setDescription(productRequest.getDescription());</b>
+<b class="fc">&nbsp;        product.setCategory(productRequest.getCategory());</b>
+<b class="fc">&nbsp;        product.setPrice(productRequest.getPrice());</b>
+<b class="fc">&nbsp;        product.setImageUrl(productRequest.getImageUrl());</b>
+<b class="fc">&nbsp;        product.setStockQuantity(productRequest.getStockQuantity());</b>
+<b class="fc">&nbsp;        product.setSeller(productRequest.getSeller());</b>
+<b class="fc">&nbsp;        product.setActive(productRequest.getStockQuantity() &gt; 0);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private ProductResponse mapToProductResponse(Product savedProduct) {
+<b class="fc">&nbsp;        ProductResponse productResponse = new ProductResponse();</b>
+<b class="fc">&nbsp;        productResponse.setId(savedProduct.getId());</b>
+<b class="fc">&nbsp;        productResponse.setName(savedProduct.getName());</b>
+<b class="fc">&nbsp;        productResponse.setDescription(savedProduct.getDescription());</b>
+<b class="fc">&nbsp;        productResponse.setCategory(savedProduct.getCategory());</b>
+<b class="fc">&nbsp;        productResponse.setPrice(savedProduct.getPrice());</b>
+<b class="fc">&nbsp;        productResponse.setActive(savedProduct.getActive());</b>
+<b class="fc">&nbsp;        productResponse.setImageUrl(savedProduct.getImageUrl());</b>
+<b class="fc">&nbsp;        productResponse.setStockQuantity(savedProduct.getStockQuantity());</b>
+<b class="fc">&nbsp;        productResponse.setSeller(savedProduct.getSeller());</b>
+<b class="fc">&nbsp;        return productResponse;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean hasRole(Authentication auth, String role) {
+<b class="pc">&nbsp;        return auth != null &amp;&amp; auth.getAuthorities().stream()</b>
+<b class="fc">&nbsp;                .anyMatch(granted -&gt; granted.getAuthority().equals(role));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Product getProductByIdSeller(int id) {
+<b class="nc">&nbsp;        Optional&lt;Product&gt; product = productRepo.findById(id);</b>
+<b class="nc">&nbsp;        return product.get();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-09-19 15:50</div>
+</div>
+</body>
+</html>

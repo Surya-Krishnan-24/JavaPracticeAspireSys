@@ -46,7 +46,6 @@ public class KeyCloakAdminService {
     private final RestClient restClient;
 
 
-
     public String getAdminAccessToken() {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("client_id", adminClientId);
