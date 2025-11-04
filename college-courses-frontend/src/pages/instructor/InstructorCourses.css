@@ -1,0 +1,161 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+/* ======== General Layout ======== */
+.instructor-dashboard {
+  display: flex;
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  margin-left: 10px;
+  background-color: #f5f7fa;
+}
+
+/* ======== Main Content Area ======== */
+.instructor-content {
+  flex: 1;
+  margin-left: -20px; /* matches sidebar width */
+  padding: 40px 50px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  background-color: #f5f7fa;
+  transition: margin-left 0.3s ease;
+}
+
+.page-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 25px;
+}
+
+/* ======== Status & No Courses Messages ======== */
+.status-message {
+  padding: 12px 16px;
+  background-color: #fdecea;
+  color: #e74c3c;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.no-courses {
+  font-size: 18px;
+  color: #7f8c8d;
+  text-align: center;
+  margin-top: 50px;
+}
+
+/* ======== Courses Grid ======== */
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 per row */
+  gap: 25px;
+  margin-top: 20px;
+}
+
+/* ======== Course Card ======== */
+.course-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: 270px; /* fixed rectangular height */
+  width: 300px;
+
+}
+
+.course-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border: 1px solid #1abc9c;
+}
+
+/* ======== Course Image ======== */
+.course-image-wrapper {
+  width: 100%;
+  height: 160px; /* half of card height */
+  overflow: hidden;
+}
+
+.course-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.course-card:hover .course-thumb {
+  transform: scale(1.05);
+}
+
+/* ======== Course Info ======== */
+.course-info {
+  padding: 20px;
+  text-align: center;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.course-info h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+/* ======== View Button ======== */
+.view-btn {
+  background: linear-gradient(135deg, #1abc9c, #16a085);
+  color: #ffffff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: auto; /* stays at bottom of card */
+}
+
+.view-btn:hover {
+  background: linear-gradient(135deg, #16a085, #1abc9c);
+  transform: translateY(-2px);
+}
+
+/* ======== Responsive Adjustments ======== */
+@media (max-width: 1200px) {
+  .courses-grid {
+    grid-template-columns: repeat(2, 1fr); /* 2 per row on smaller desktops/tablets */
+  }
+}
+
+@media (max-width: 768px) {
+  .instructor-content {
+    margin-left: 140px; /* smaller sidebar width */
+    padding: 20px;
+  }
+
+  .courses-grid {
+    grid-template-columns: 1fr; /* 1 per row on mobile */
+    gap: 20px;
+  }
+
+  .page-title {
+    font-size: 26px;
+  }
+
+  .course-info h3 {
+    font-size: 18px;
+  }
+
+  .view-btn {
+    padding: 8px 14px;
+    font-size: 14px;
+  }
+}

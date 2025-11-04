@@ -1,6 +1,7 @@
 package com.example.UserService.Service;
 
 import com.example.UserService.DOA.UserRepo;
+
 import com.example.UserService.DTO.AddressResponse;
 import com.example.UserService.DTO.UserLoginRequest;
 import com.example.UserService.DTO.UserRequest;
@@ -52,7 +53,7 @@ public class UserService {
         return "User Added";
     }
 
-    public UserResponse getUserById(String id) {
+    public UserResponse getUserById(Long id) {
         Optional<User> user =  userRepo.findById(id);
         return user.map(this::mapToUserResponse).orElse(null);
 
@@ -66,7 +67,7 @@ public class UserService {
         return user.getEmail();
     }
 
-    public UserRequest updateUser(String id, UserRequest userRequest) {
+    public UserRequest updateUser(Long id, UserRequest userRequest) {
         return userRepo.findById(id).map(existingUser -> {
 
                     updateUserFromRequest(existingUser, userRequest);
@@ -89,7 +90,7 @@ public class UserService {
     private UserResponse mapToUserResponse(User user){
 
         UserResponse userResponse = new UserResponse();
-        userResponse.setId(user.getId());
+        
         userResponse.setUsername(user.getUsername());
         userResponse.setFirstName(user.getFirstName());
         userResponse.setLastName(user.getLastName());
@@ -152,21 +153,22 @@ public class UserService {
         if (user == null){
             throw new ResourceNotFoundException("User not found with Keycloak ID: " + keycloakId);
         }
-        return user.getId();
+        return String.valueOf(user.getId());
+
     }
 
-    public String getUserFullNameById(String id) {
+    public String getUserFullNameById(Long id) {
         Optional<User> user =  userRepo.findById(id);
         return user.get().getFirstName() + " "+ user.get().getLastName();
 
     }
 
-    public UserAddress getUserAddressById(String id) {
+    public UserAddress getUserAddressById(Long id) {
         Optional<User> user =  userRepo.findById(id);
         return user.get().getUserAddress();
     }
 
-    public String getUserEmail(String id) {
+    public String getUserEmail(Long id) {
         Optional<User> user =  userRepo.findById(id);
         return user.get().getEmail();
     }
