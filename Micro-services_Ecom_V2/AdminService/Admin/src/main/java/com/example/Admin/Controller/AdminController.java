@@ -28,6 +28,8 @@ public class AdminController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/allusers")
     public ResponseEntity<List<UserResponse>> getAllUsers() {
+    	System.out.println("hello");
+
         return userServiceClient.getAllUsers();
     }
 

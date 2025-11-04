@@ -36,6 +36,9 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<String> createUser(@RequestBody UserRequest userRequest){
+    	log.info("Received userRequest: {}", userRequest);
+    	System.out.println(userRequest);
+
         userRequest.setUserRole(UserRole.USER);
         return new ResponseEntity<>(userService.createUser(userRequest), HttpStatus.CREATED);
 
@@ -63,7 +66,7 @@ public class UserController {
     }
     @PreAuthorize("hasAnyRole('ADMIN', 'USER','SELLER')")
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> getUser(@PathVariable String id){
+    public ResponseEntity<UserResponse> getUser(@PathVariable Long id){
 
         log.info("Request received for user: {}", id);
         UserResponse response =  userService.getUserById(id);
@@ -83,7 +86,7 @@ public class UserController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PutMapping("/{id}")
-    public ResponseEntity<UserRequest> updateUser(@PathVariable String id,@RequestBody UserRequest userRequest){
+    public ResponseEntity<UserRequest> updateUser(@PathVariable Long id,@RequestBody UserRequest userRequest){
         UserRequest user1 = userService.updateUser(id,userRequest);
         if(user1 == null) {
             return new ResponseEntity<>(user1, HttpStatus.NOT_FOUND);
@@ -100,20 +103,20 @@ public class UserController {
 
     @PreAuthorize("hasAnyRole('SELLER')")
     @GetMapping("/fullname/{id}")
-    public String getUsername(@PathVariable String id){
+    public String getUsername(@PathVariable Long id){
 
         return userService.getUserFullNameById(id);
     }
 
     @PreAuthorize("hasAnyRole('SELLER')")
     @GetMapping("/address/{id}")
-    public UserAddress getUserAddress(@PathVariable String id){
+    public UserAddress getUserAddress(@PathVariable Long id){
         return userService.getUserAddressById(id);
     }
 
     @PreAuthorize("hasAnyRole('SELLER')")
     @GetMapping("/email/{id}")
-    public String getUserEmail(@PathVariable String id){
+    public String getUserEmail(@PathVariable Long id){
         return userService.getUserEmail(id);
     }
 }

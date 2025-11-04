@@ -22,6 +22,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class KeyCloakAdminService {
 
+    
     @Value("${keycloak.admin.username}")
     private String adminUsername;
 
@@ -37,11 +38,15 @@ public class KeyCloakAdminService {
     @Value("${keycloak.admin.client-id}")
     private String adminClientId;
 
-    @Value("${keycloak.admin.client}")
-    private String clientId;
-
     @Value("${keycloak.admin.client-uuid}")
     private String userUuid;
+
+  
+    @Value("${keycloak.login.client-id}")
+    private String loginClientId;
+
+    @Value("${keycloak.login.client-secret:}") 
+    private String loginClientSecret;
 
     private final RestClient restClient;
 
@@ -59,8 +64,7 @@ public class KeyCloakAdminService {
                     .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                     .body(params)
                     .retrieve()
-                    .body(new ParameterizedTypeReference<>() {
-                    });
+                    .body(new ParameterizedTypeReference<>() {});
 
             return response.get("access_token").toString();
         } catch (HttpStatusCodeException e) {
@@ -86,6 +90,7 @@ public class KeyCloakAdminService {
         credential.put("temporary", false);
 
         userPayload.put("credentials", List.of(credential));
+
         try {
             ResponseEntity<Void> response = restClient.post()
                     .uri(keycloakServerUrl + "/admin/realms/" + realm + "/users")
@@ -95,7 +100,7 @@ public class KeyCloakAdminService {
                     .toEntity(Void.class);
 
             if (!response.getStatusCode().equals(HttpStatus.CREATED)) {
-                throw new KeycloakUserCreationException("Failed to create user in keycloak. Status: " + response.getStatusCode());
+                throw new KeycloakUserCreationException("Failed to create user in Keycloak. Status: " + response.getStatusCode());
             }
 
             URI location = response.getHeaders().getLocation();
@@ -103,13 +108,12 @@ public class KeyCloakAdminService {
                 throw new KeycloakUserCreationException("Keycloak did not return Location header.");
             }
 
-            String path = location.getPath();
-            return path.substring(path.lastIndexOf("/") + 1);
-        }
-        catch (HttpStatusCodeException e){
+            return location.getPath().substring(location.getPath().lastIndexOf("/") + 1);
+        } catch (HttpStatusCodeException e) {
             throw new KeycloakUserCreationException("Keycloak error: " + e.getResponseBodyAsString());
         }
     }
+
 
     public void updateUserInKeycloak(String token, String keycloakUserId, UserRequest userRequest) {
         Map<String, Object> userPayload = new HashMap<>();
@@ -143,7 +147,6 @@ public class KeyCloakAdminService {
     }
 
 
-
     public void assignRoleToUser(String roleName, String userId) {
         String token = getAdminAccessToken();
         Map<String, Object> roleRep = getRealmRoleRepresentation(token, roleName);
@@ -164,14 +167,16 @@ public class KeyCloakAdminService {
                 .uri(keycloakServerUrl + "/admin/realms/" + realm + "/clients/" + userUuid + "/roles/" + roleName)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                 .retrieve()
-                .body(new ParameterizedTypeReference<>() {
-                });
+                .body(new ParameterizedTypeReference<>() {});
     }
 
-    public String login(String username, String password) {
 
+    public String login(String username, String password) {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("client_id", clientId);
+        params.add("client_id", loginClientId);
+        if (loginClientSecret != null && !loginClientSecret.isEmpty()) {
+            params.add("client_secret", loginClientSecret);
+        }
         params.add("grant_type", "password");
         params.add("username", username);
         params.add("password", password);
@@ -182,8 +187,7 @@ public class KeyCloakAdminService {
                     .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                     .body(params)
                     .retrieve()
-                    .body(new ParameterizedTypeReference<>() {
-                    });
+                    .body(new ParameterizedTypeReference<>() {});
 
             return response != null ? response.get("access_token").toString() : null;
         } catch (Exception e) {

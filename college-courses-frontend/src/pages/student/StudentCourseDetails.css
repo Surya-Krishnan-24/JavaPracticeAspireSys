@@ -1,0 +1,186 @@
+/* General Layout for the Course Details Page */
+.course-details-page {
+  display: flex;
+  min-height: auto; /* Allows page to grow based on content */
+  width: 162vh;
+  margin-left: 270px;
+  background-color: #f4f7fc;
+  flex-direction: column;
+  padding-bottom: 30px; /* Ensures content doesn't touch the bottom of the page */
+}
+
+/* Course Details Content Section */
+.course-details-content {
+  flex-grow: 1;
+  padding: 30px;
+  max-width: 1200px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Course Title */
+.course-details-title {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: #2e3a59;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Status Message (Success or Error) */
+.course-status-message {
+  font-size: 1.2rem;
+  text-align: center;
+  margin-top: 20px;
+  color: #e74c3c;
+}
+
+/* Thumbnail Image */
+.course-thumbnail {
+  max-width: 400px;
+  margin-bottom: 20px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 8px;
+}
+
+/* Subtopics Section */
+.course-subtopics {
+  margin-top: 40px;
+}
+
+.course-subtopics-title {
+  font-size: 1.8rem;
+  font-weight: 500;
+  color: #3498db;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Each Subtopic Item */
+.course-subtopic-item {
+  margin-bottom: 30px;
+  padding: 20px;
+  background-color: #f9fafc;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Subtopic Title */
+.course-subtopic-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2e3a59;
+  margin-bottom: 15px;
+}
+
+/* Content List (Descriptions) */
+.course-subtopic-content-list {
+  list-style-type: disc;
+  margin-left: 20px;
+}
+
+.course-subtopic-content-item {
+  font-size: 1.1rem;
+  color: #34495e;
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+
+/* Message for No Content or No Subtopics */
+.course-no-content, .course-no-subtopics {
+  font-size: 1rem;
+  color: #95a5a6;
+  text-align: center;
+  font-style: italic;
+}
+
+/* Button Styles */
+.course-back-btn {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 6px;
+  background-color: #3498db;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 30px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.course-back-btn:hover {
+  background-color: #2980b9;
+}
+
+/* Enroll Button Style */
+.course-enroll-btn {
+  padding: 12px 20px;
+  font-size: 1rem;
+  border-radius: 6px;
+  background-color: #4CAF50;
+  color: white;
+  cursor: pointer;
+  border: none;
+  margin-top: 20px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.course-enroll-btn:hover {
+  background-color: #45a049;
+}
+
+/* Responsive Design for Small Screens */
+@media (max-width: 768px) {
+  .course-details-content {
+    padding: 20px;
+  }
+
+  .course-thumbnail {
+    max-width: 300px;
+  }
+
+  .course-subtopics-title {
+    font-size: 1.5rem;
+  }
+
+  .course-subtopic-item {
+    padding: 15px;
+  }
+
+  .course-subtopic-title {
+    font-size: 1.3rem;
+  }
+
+  .course-subtopic-content-item {
+    font-size: 1rem;
+  }
+
+  .course-back-btn, .course-enroll-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .course-details-title {
+    font-size: 2rem;
+  }
+
+  .course-subtopic-title {
+    font-size: 1.2rem;
+  }
+
+  .course-subtopic-content-item {
+    font-size: 0.95rem;
+  }
+
+  .course-back-btn, .course-enroll-btn {
+    padding: 12px 0;
+  }
+}

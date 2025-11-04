@@ -16,6 +16,4 @@ public class UserRequest {
     private UserRole userRole = UserRole.USER;
     private String mobileNo;
     private AddressResponse addressResponse;
-
-
 }

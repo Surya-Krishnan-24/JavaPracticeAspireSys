@@ -1,0 +1,136 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 240px;
+  background: linear-gradient(135deg, #2c3e50, #34495e);
+  color: #ecf0f1;
+  padding: 30px 20px;
+  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  font-family: 'Inter', sans-serif;
+  z-index: 1000;
+  overflow-y: auto; /* ✅ allows scrolling if content exceeds height */
+}
+
+/* Sidebar Title */
+.sidebar-title {
+  font-size: 26px;
+  font-weight: 600;
+  margin-bottom: 40px;
+  text-align: center;
+  color: #ffffff;
+  letter-spacing: 1px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 15px;
+}
+
+/* Navigation Container */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  flex-grow: 1;
+}
+
+/* Link Style */
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #ecf0f1;
+  text-decoration: none;
+  font-size: 17px;
+  padding: 12px 18px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.sidebar-link::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  height: 100%;
+  width: 4px;
+  background: transparent;
+  border-radius: 4px;
+  transition: background 0.3s;
+}
+
+.sidebar-link:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  transform: translateX(4px);
+}
+
+.sidebar-link:hover::before {
+  background: #1abc9c;
+}
+
+/* Active link styling */
+.sidebar-link.active {
+  background-color: rgba(26, 188, 156, 0.15);
+  font-weight: 600;
+  color: #1abc9c;
+}
+
+.sidebar-link.active::before {
+  background: #1abc9c;
+}
+
+/* --- Logout Button --- */
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #ecf0f1;
+  background: none;
+  border: none;
+  font-size: 17px;
+  padding: 12px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  text-align: left;
+  margin-top: 20px; /* ✅ small space after nav */
+  position: sticky; /* ✅ stays visible at bottom */
+  bottom: 10px;
+  background: linear-gradient(135deg, #2c3e50, #34495e);
+}
+
+.logout-btn:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #e74c3c;
+  transform: translateX(4px);
+}
+
+.logout-btn svg {
+  font-size: 18px;
+}
+
+/* For smaller screens */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 140px;
+    padding: 20px 15px;
+  }
+
+  .sidebar-title {
+    font-size: 22px;
+  }
+
+  .sidebar-link {
+    font-size: 15px;
+    padding: 10px 14px;
+  }
+
+  .logout-btn {
+    font-size: 15px;
+    padding: 10px 14px;
+  }
+}
